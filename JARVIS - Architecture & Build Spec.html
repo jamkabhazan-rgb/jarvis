@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S. — Architecture &amp; Build Specification</title>
+<style>
+  :root{
+    --bg:#0a0e13; --bg2:#0e141b; --panel:#101822; --code:#0c1219;
+    --text:#e7ebf2; --dim:#9fb0c3; --muted:#637184;
+    --accent:#36c9ff; --accent2:#1f8fe0; --ok:#41e0a3; --warn:#ffb347; --danger:#ff5b78;
+    --line:rgba(120,180,230,.14); --line-soft:rgba(120,180,230,.08);
+    --mono:'SF Mono','JetBrains Mono','Fira Code','Cascadia Code',monospace;
+    --sans:-apple-system,'SF Pro Text','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{display:grid;grid-template-columns:248px minmax(0,1fr);max-width:1180px;margin:0 auto;gap:0}
+
+  /* TOC */
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:34px 22px;border-right:1px solid var(--line);background:var(--bg2)}
+  aside .brand{font-family:var(--mono);font-weight:700;letter-spacing:.26em;font-size:13px;color:var(--accent);text-shadow:0 0 16px rgba(54,201,255,.4)}
+  aside .ver{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.18em;margin:6px 0 22px}
+  aside nav a{display:block;font-size:12.5px;color:var(--dim);text-decoration:none;padding:5px 0;border-left:2px solid transparent;padding-left:11px;margin-left:-11px;transition:.15s}
+  aside nav a:hover{color:var(--text)}
+  aside nav a .n{font-family:var(--mono);color:var(--muted);font-size:10.5px;margin-right:8px}
+  aside nav a.sub{padding-left:26px;font-size:11.5px;color:var(--muted)}
+
+  main{padding:54px 56px 120px;min-width:0}
+  .doc-head{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:40px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:38px;line-height:1.12;letter-spacing:-.02em;margin:14px 0 10px;font-weight:680}
+  .sub{color:var(--dim);font-size:16px;max-width:640px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+  .meta .pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:6px 13px}
+  .meta .pill b{color:var(--accent);font-weight:600}
+
+  section{margin:0 0 46px;scroll-margin-top:24px}
+  h2{font-size:13px;font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:54px 0 6px;display:flex;align-items:baseline;gap:12px}
+  h2 .num{color:var(--muted);font-weight:400}
+  h2 + .lead{color:var(--dim);font-size:15px;margin:0 0 20px;border-bottom:1px solid var(--line-soft);padding-bottom:18px}
+  h3{font-size:18px;margin:28px 0 8px;letter-spacing:-.01em;font-weight:640}
+  h4{font-size:13.5px;font-family:var(--mono);letter-spacing:.04em;color:var(--text);margin:20px 0 6px}
+  p{margin:0 0 14px}
+  strong{color:#fff}
+  a.inl{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(54,201,255,.3)}
+  ul,ol{margin:0 0 16px;padding-left:22px}
+  li{margin:5px 0}
+  li::marker{color:var(--accent)}
+  code{font-family:var(--mono);font-size:.86em;background:rgba(120,180,230,.1);padding:1.5px 6px;border-radius:5px;color:#bfe6ff}
+
+  pre{background:var(--code);border:1px solid var(--line);border-radius:11px;padding:17px 19px;overflow-x:auto;margin:0 0 18px;font-family:var(--mono);font-size:12.8px;line-height:1.62;color:#cdd8e6}
+  pre .c{color:#5f7184}      /* comment */
+  pre .k{color:#ff9d6b}      /* keyword */
+  pre .s{color:#9be37d}      /* string */
+  pre .p{color:#36c9ff}      /* property/accent */
+  pre .d{color:#9fb0c3}      /* dim */
+
+  table{width:100%;border-collapse:collapse;margin:0 0 20px;font-size:13.5px}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+  td code{font-size:.84em}
+  tr td:first-child{white-space:nowrap}
+
+  .callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--panel);border-radius:9px;padding:14px 18px;margin:0 0 18px}
+  .callout.warn{border-left-color:var(--warn)}
+  .callout.danger{border-left-color:var(--danger)}
+  .callout .ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  .callout.warn .ct{color:var(--warn)} .callout.danger .ct{color:var(--danger)}
+  .callout p{margin:0;font-size:14px;color:var(--dim)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  .card{border:1px solid var(--line);border-radius:11px;background:var(--panel);padding:16px 18px}
+  .card h4{margin-top:0}
+  .card p{font-size:13.5px;color:var(--dim);margin:0}
+
+  .check{list-style:none;padding:0}
+  .check li{padding-left:30px;position:relative;margin:9px 0;font-size:14px}
+  .check li::before{content:"";position:absolute;left:0;top:3px;width:16px;height:16px;border:1.5px solid var(--accent);border-radius:5px}
+  .check li::after{content:"✓";position:absolute;left:3.5px;top:1px;color:var(--accent);font-size:12px}
+
+  .ascii{font-family:var(--mono);font-size:12px;line-height:1.45;color:var(--dim);background:var(--code);border:1px solid var(--line);border-radius:11px;padding:18px;overflow-x:auto;white-space:pre}
+
+  hr{border:none;border-top:1px solid var(--line);margin:40px 0}
+  .end{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-align:center;margin-top:60px;padding-top:24px;border-top:1px solid var(--line)}
+
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr} aside{display:none} main{padding:34px 22px 80px} .grid2{grid-template-columns:1fr} }
+
+  @media print{
+    :root{--bg:#fff;--bg2:#fff;--panel:#f6f8fa;--code:#f3f5f8;--text:#101418;--dim:#3a444f;--muted:#6a7682;--line:#d8dee6;--line-soft:#e8ecf1;--accent:#0a6ebd;--accent2:#0a6ebd}
+    body{font-size:11pt;line-height:1.5}
+    .wrap{display:block;max-width:none}
+    aside{display:none}
+    main{padding:0}
+    pre,.ascii,table,.callout,.card{break-inside:avoid}
+    h2,h3{break-after:avoid}
+    h1{font-size:26pt}
+    a.inl{border:none;color:var(--accent)}
+    code{background:#eef2f6}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <aside>
+    <div class="brand">J.A.R.V.I.S.</div>
+    <div class="ver">BUILD SPEC · v1.0</div>
+    <nav>
+      <a href="#use"><span class="n">00</span>How to use</a>
+      <a href="#overview"><span class="n">01</span>Overview</a>
+      <a href="#stack"><span class="n">02</span>Tech stack</a>
+      <a href="#arch"><span class="n">03</span>Architecture</a>
+      <a href="#tree"><span class="n">04</span>Repo structure</a>
+      <a href="#loader"><span class="n">05</span>Cinematic loader</a>
+      <a href="#design"><span class="n">06</span>Design system</a>
+      <a href="#orb"><span class="n">07</span>The Orb</a>
+      <a href="#voice"><span class="n">08</span>Voice pipeline (OpenAI)</a>
+      <a href="#tools"><span class="n">09</span>Tool framework</a>
+      <a href="#modules"><span class="n">10</span>Feature modules</a>
+      <a href="#agents"><span class="n">11</span>Agents</a>
+      <a href="#data"><span class="n">12</span>Data model</a>
+      <a href="#security"><span class="n">13</span>Security</a>
+      <a href="#openai"><span class="n">14</span>OpenAI integration</a>
+      <a href="#build"><span class="n">15</span>Build &amp; run</a>
+      <a href="#dod"><span class="n">16</span>Definition of done</a>
+      <a href="#scope"><span class="n">17</span>Out of scope</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="doc-head">
+      <div class="kicker">Platform Architecture &amp; Build Specification</div>
+      <h1>J.A.R.V.I.S. — a local-first voice AI assistant</h1>
+      <p class="sub">A complete, build-ready brief for <strong>Claude Code</strong> to implement the platform exactly as prototyped. Cross-platform native shell, cinematic UI, and a cheap voice loop powered entirely by an <strong>OpenAI API key</strong>.</p>
+      <div class="meta">
+        <span class="pill">TARGET: <b>Claude Code</b></span>
+        <span class="pill">SHELL: <b>Tauri 2</b></span>
+        <span class="pill">AI: <b>OpenAI API</b></span>
+        <span class="pill">PLATFORMS: <b>macOS · Windows · Linux · Android</b></span>
+        <span class="pill">DATE: <b>2026-06-08</b></span>
+      </div>
+    </div>
+
+    <!-- 00 -->
+    <section id="use">
+      <h2><span class="num">00</span> How to use this document</h2>
+      <p class="lead">This is the single source of truth. Build top-to-bottom; each section is a contract.</p>
+      <ul>
+        <li>Implement in the <strong>order of §15 (sprints)</strong>. Ship the loader + shell first — it is the product's signature.</li>
+        <li>The reference prototype (HTML/CSS/JS) demonstrates every screen and interaction. Treat its visual output and behavior as the <strong>acceptance target</strong>; this doc defines the production architecture behind it.</li>
+        <li>Anything marked <span class="pill" style="padding:2px 8px">MUST</span> is non-negotiable. <span class="pill" style="padding:2px 8px">SHOULD</span> is strongly preferred. <span class="pill" style="padding:2px 8px">MAY</span> is optional.</li>
+        <li>The whole AI surface runs on <strong>one OpenAI API key</strong> held by the user. No other paid services. No telemetry.</li>
+        <li>When a decision is ambiguous, prefer: local-first, cheapest OpenAI model that meets quality, and the smallest reviewable change.</li>
+      </ul>
+    </section>
+
+    <!-- 01 -->
+    <section id="overview">
+      <h2><span class="num">01</span> Product overview &amp; principles</h2>
+      <p class="lead">A personal, cinematic, J.A.R.V.I.S.-style desktop/mobile assistant that talks, helps with work, and lives on the user's machine.</p>
+      <p>The assistant boots with a dramatic full-screen sequence, presents a single dark glass interface with an audio-reactive particle orb and a tabbed work surface (chat, tasks, goals, research, mail, finance, tracker, knowledge, connectors, agents). It listens, thinks, calls tools, and speaks back.</p>
+      <h4>Principles (MUST)</h4>
+      <ul>
+        <li><strong>Local-first / private.</strong> Data lives on device. The only network egress is to the OpenAI API, on the user's key, and only when a feature needs it.</li>
+        <li><strong>One key, cheap.</strong> STT + LLM + TTS + embeddings all run through the OpenAI API. No realtime API; stream a classic pipeline to feel live at a fraction of the cost.</li>
+        <li><strong>Beauty is the product.</strong> Animation, sound design and "vibe" are first-class. 60fps, GPU-only transforms.</li>
+        <li><strong>Modular skills.</strong> Every capability is a function-calling tool with a JSON schema.</li>
+        <li><strong>Secure by default.</strong> Any system access (files, screen, mouse) is an opt-in, permission-gated module, off by default.</li>
+        <li><strong>Never break the app.</strong> The loader must always reveal the UI (try/catch + hard timeout). API failures surface to the user, never swallowed.</li>
+      </ul>
+    </section>
+
+    <!-- 02 -->
+    <section id="stack">
+      <h2><span class="num">02</span> Technology stack</h2>
+      <p class="lead">One web frontend inside a lightweight native shell, with a Rust core that owns secrets and all OpenAI calls.</p>
+      <table>
+        <thead><tr><th>Layer</th><th>Choice</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Shell</td><td><code>Tauri 2</code> (Rust + system WebView)</td><td>macOS / Win / Linux / Android / iOS from one base; ~5–15 MB. MUST.</td></tr>
+          <tr><td>Frontend</td><td>HTML / CSS / vanilla JS (or Svelte)</td><td>The cinematic UI is Canvas + CSS + WebAudio. Match the prototype 1:1.</td></tr>
+          <tr><td>Visuals</td><td>Canvas 2D (orb, loader)</td><td>WebGL MAY be used later; Canvas 2D is sufficient and proven in the prototype.</td></tr>
+          <tr><td>Sound</td><td>WebAudio API (synthesis)</td><td>All SFX generated by oscillators/noise — zero audio files.</td></tr>
+          <tr><td>Core / backend</td><td>Rust (Tauri commands)</td><td>Owns the OpenAI key, proxies all API calls, runs the dialog orchestrator + tool router.</td></tr>
+          <tr><td>Structured data</td><td>SQLite (<code>tauri-plugin-sql</code>)</td><td>Tasks, goals, finance, tracker, agents. Prototype may start with JSON.</td></tr>
+          <tr><td>Knowledge</td><td>Markdown vault + embeddings index</td><td>Obsidian-compatible <code>.md</code> with YAML frontmatter; vector index for semantic search.</td></tr>
+          <tr><td>Live UI</td><td>Tauri events (<code>emit</code>/<code>listen</code>)</td><td>Core state changes push to panels reactively.</td></tr>
+          <tr><td>AI</td><td><strong>OpenAI API only</strong></td><td>STT, LLM(+tools), TTS, embeddings. See §14.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><div class="ct">Key boundary</div><p>The OpenAI API key and every OpenAI HTTP request live in the <strong>Rust core</strong>. The WebView never sees the key and never calls OpenAI directly. The frontend talks to the core via <code>invoke()</code> and receives streamed chunks via events.</p></div>
+    </section>
+
+    <!-- 03 -->
+    <section id="arch">
+      <h2><span class="num">03</span> High-level architecture</h2>
+      <p class="lead">Frontend renders + captures; Rust core orchestrates, calls OpenAI, persists.</p>
+      <div class="ascii">┌──────────────────────────── NATIVE SHELL (Tauri 2) ────────────────────────────┐
+│                                                                                 │
+│  WEBVIEW (frontend)                 invoke()         RUST CORE (backend)         │
+│  ┌────────────────────────┐  ◄──────────────────►  ┌──────────────────────────┐ │
+│  │ • Cinematic boot        │       events           │ • Dialog orchestrator    │ │
+│  │ • Orb (audio-reactive)  │  ◄──────────────────   │ • Tool router (fn-calls) │ │
+│  │ • Topbar nav + panels   │   (stream chunks)      │ • Permission mgr + audit │ │
+│  │ • Mic capture / playback│                        │ • OpenAI client (KEY)    │ │
+│  └────────────────────────┘                        │ • Data (SQLite + vault)  │ │
+│                                                     └─────────────┬────────────┘ │
+│                            ┌──────────────┬──────────────┬────────┴───────────┐  │
+│                            ▼              ▼              ▼                    ▼  │
+│                      OpenAI STT     OpenAI LLM     OpenAI TTS           Storage  │
+│                     (whisper-1)   (gpt-4o-mini)  (gpt-4o-mini-tts)   (SQLite+md) │
+└─────────────────────────────────────────────────────────────────────────────────┘</div>
+      <p><strong>Dialog flow:</strong> mic → VAD (local) → core uploads audio → OpenAI STT → orchestrator builds context → OpenAI LLM (streams tokens, may emit tool calls) → tool executed in core → result + event to UI → reply streamed to OpenAI TTS → audio played, orb reacts.</p>
+    </section>
+
+    <!-- 04 -->
+    <section id="tree">
+      <h2><span class="num">04</span> Repository structure</h2>
+      <p class="lead">Frontend mirrors the prototype's module split; Rust core is feature-foldered.</p>
+      <pre><span class="c"># Tauri project root</span>
+jarvis/
+├─ src-tauri/                  <span class="c"># Rust core</span>
+│  ├─ src/
+│  │  ├─ main.rs               <span class="c"># window, plugins, command registry</span>
+│  │  ├─ openai/               <span class="c"># OpenAI client — OWNS THE KEY</span>
+│  │  │  ├─ mod.rs  stt.rs  chat.rs  tts.rs  embed.rs
+│  │  ├─ orchestrator.rs       <span class="c"># dialog loop, context builder</span>
+│  │  ├─ tools/                <span class="c"># one file per skill (fn-calling)</span>
+│  │  │  ├─ mod.rs  tasks.rs  goals.rs  mail.rs  research.rs
+│  │  │  ├─ finance.rs  tracker.rs  vault.rs  reminders.rs  agents.rs
+│  │  ├─ permissions.rs  audit.rs
+│  │  ├─ db.rs                 <span class="c"># SQLite (sqlx)</span>
+│  │  └─ vault.rs              <span class="c"># markdown vault + embeddings index</span>
+│  ├─ tauri.conf.json
+│  └─ Cargo.toml
+├─ src/                        <span class="c"># web frontend (matches prototype)</span>
+│  ├─ index.html
+│  ├─ styles.css  panels.css  finance.css  agents.css
+│  ├─ audio.js                 <span class="c"># WebAudio SFX synth</span>
+│  ├─ boot.js                  <span class="c"># cinematic loader phase machine</span>
+│  ├─ orb.js                   <span class="c"># particle orb (audio-reactive)</span>
+│  ├─ app.js                   <span class="c"># shell: nav, chat, voice state</span>
+│  ├─ panels.js                <span class="c"># tasks/kanban, connectors, vault, settings</span>
+│  ├─ finance.js  agents.js
+│  └─ bridge.js                <span class="c"># invoke()/listen() wrappers to core</span>
+└─ README.md</pre>
+    </section>
+
+    <!-- 05 -->
+    <section id="loader">
+      <h2><span class="num">05</span> Cinematic loader</h2>
+      <p class="lead">The signature. A phase machine, ~7s of synthesized sound then silence, with a hard failsafe.</p>
+      <h4>Phases (in order) — MUST</h4>
+      <ol>
+        <li><strong>Kernel flood</strong> (~1.5s): full-screen monospace boot-log, neon, rolling buffer (old lines dropped — never accumulate thousands of nodes). Low rumble + typing ticks.</li>
+        <li><strong>Glitch logo</strong> (~1.4s): product name large, RGB-split (clip-path + dual text-shadow) + shake keyframes. Heavy impact hit.</li>
+        <li><strong>Welcome</strong> (~1.4s): types <code>Welcome back, &lt;Name&gt;.</code> (name from Settings).</li>
+        <li><strong>Full-screen orb formation</strong> (~2.2s): ~900 particles converge from screen edges into a glowing sphere; shockwave rings; climax flash + “SYSTEM ONLINE”. Ominous rumble + dissonant riser + metallic shrieks + sub-bass boom on climax.</li>
+        <li><strong>Reveal</strong>: overlay dissolves, UI sections materialize by stagger (topbar → orb → panel).</li>
+      </ol>
+      <div class="callout warn"><div class="ct">Audio rule</div><p>All loader sound MUST fade to silence by <strong>7 seconds</strong> (schedule a master-gain ramp on the audio clock). The climax boom lands before 7s. After boot, restore master gain so app SFX work. No background music — sound design only.</p></div>
+      <div class="callout danger"><div class="ct">Failsafe (MUST)</div><p>Wrap the phase loop in <code>try/catch → forceReveal()</code>. Add a hard <code>setTimeout(forceReveal, 16000)</code>. Respect <code>prefers-reduced-motion</code> with an instant path. The UI is hidden statically via a <code>booting</code> class in markup (no first-frame flash); reveal sets inline <code>opacity/transform</code> so a stalled CSS transition can never trap the app.</p></div>
+      <h4>WebAudio synth (MUST, no files)</h4>
+      <p>Provide <code>tone()</code> (osc + freq sweep + ADSR), <code>noise()</code> (filtered buffer), <code>digi()</code> (square + bitcrush WaveShaper), <code>glitch()</code>, <code>rumble()</code>, <code>riser()</code>, <code>boom()</code>, plus a generated <code>ConvolverNode</code> reverb. Unlock <code>AudioContext</code> on first <code>pointerdown/keydown</code>.</p>
+    </section>
+
+    <!-- 06 -->
+    <section id="design">
+      <h2><span class="num">06</span> Design system</h2>
+      <p class="lead">Dark glassmorphism, single neon accent, monospace for technical zones. Tokens are fixed.</p>
+      <pre><span class="p">:root</span>{
+  <span class="d">--bg</span>:#000; <span class="d">--accent</span>:#00d4ff; <span class="d">--accent2</span>:#0088ff; <span class="d">--danger</span>:#ff4466;
+  <span class="d">--ok</span>:#41e0a3; <span class="d">--gold</span>:#ffb347;
+  <span class="d">--text</span>:#e8eaf0; <span class="d">--text-dim</span>:#8899aa; <span class="d">--muted</span>:#4a5568;
+  <span class="d">--glass-bg</span>:rgba(10,16,24,.62); <span class="d">--glass-border</span>:rgba(120,200,255,.10);
+  <span class="d">--font</span>:-apple-system,'SF Pro Display','Segoe UI',sans-serif;
+  <span class="d">--mono</span>:'SF Mono','Fira Code',monospace;
+  <span class="d">--radius</span>:14px; <span class="d">--transition</span>:.4s cubic-bezier(.4,0,.2,1);
+}</pre>
+      <ul>
+        <li><strong>Layers:</strong> ambient radial-gradient backdrop + faint grid; global scanlines + vignette + occasional flicker as non-interactive overlays.</li>
+        <li><strong>Panels:</strong> glass blur, hairline border, corner ticks.</li>
+        <li><strong>Type scale:</strong> never below 24px in the loader headline; body 14–15px; mono 10–13px for labels/data. Letter-spacing on uppercase mono labels.</li>
+        <li><strong>Motion:</strong> animate <code>transform</code> + <code>opacity</code> only. Respect reduced-motion.</li>
+        <li><strong>No:</strong> gradient-soup backgrounds, emoji (except where data demands), invented colors. Derive new hues in oklch from the accent if needed.</li>
+      </ul>
+    </section>
+
+    <!-- 07 -->
+    <section id="orb">
+      <h2><span class="num">07</span> The Orb</h2>
+      <p class="lead">Generative particle sphere, audio-reactive, with four states.</p>
+      <ul>
+        <li><strong>Render:</strong> Canvas 2D, ~460 particles on a rotating sphere projected with perspective; central radial glow + core disc; breathing.</li>
+        <li><strong>States:</strong> <code>idle</code> · <code>listening</code> · <code>thinking</code> · <code>speaking</code> — each drives base hue, spread, glow and amplitude target.</li>
+        <li><strong>Audio reactivity (MUST):</strong> attach an <code>AnalyserNode</code> to the TTS playback output; feed amplitude into the orb's scale/glow so it pulses with the assistant's voice. During <code>listening</code>, feed mic amplitude.</li>
+        <li>Expose <code>ORB.set(state)</code> and <code>ORB.amp(0..1)</code>.</li>
+      </ul>
+    </section>
+
+    <!-- 08 -->
+    <section id="voice">
+      <h2><span class="num">08</span> Voice pipeline (OpenAI, cheap, streamed)</h2>
+      <p class="lead">Classic STT → LLM(tools) → TTS loop, streamed end-to-end to feel realtime — no Realtime API.</p>
+      <div class="ascii">🎤 Mic → [wake word?] → [VAD] → [STT] → [LLM + tools] → [TTS] → 🔊
+                              ▲                            │
+                              └──── barge-in (cut TTS on speech) ──┘</div>
+      <table>
+        <thead><tr><th>Stage</th><th>OpenAI</th><th>Implementation notes</th></tr></thead>
+        <tbody>
+          <tr><td>Wake word</td><td>— (local)</td><td><code>openWakeWord</code>/Porcupine MAY trigger “Hey Jarvis”. Optional.</td></tr>
+          <tr><td>VAD</td><td>— (local)</td><td>Energy + WebRTC/Silero VAD. <strong>Silence window 1.2–1.5s</strong> before end-of-turn (MUST) — shorter cuts people off. Raise mic threshold to avoid false triggers.</td></tr>
+          <tr><td>STT</td><td><code>gpt-4o-mini-transcribe</code> (or <code>whisper-1</code>)</td><td>POST captured utterance to <code>/v1/audio/transcriptions</code>. Stream partials where supported; otherwise transcribe per finalized turn.</td></tr>
+          <tr><td>LLM</td><td><code>gpt-4o-mini</code> (tools)</td><td><code>/v1/chat/completions</code> with <code>stream:true</code> and <code>tools</code>. Stream tokens to chat UI; handle <code>tool_calls</code> deltas.</td></tr>
+          <tr><td>TTS</td><td><code>gpt-4o-mini-tts</code> (or <code>tts-1</code>)</td><td><code>/v1/audio/speech</code>. Synthesize <strong>per sentence</strong>: speak sentence 1 while generating sentence 2.</td></tr>
+        </tbody>
+      </table>
+      <h4>Turn-taking &amp; latency (MUST)</h4>
+      <ul>
+        <li><strong>Barge-in:</strong> if the user starts speaking while TTS plays, immediately stop playback and start a new turn.</li>
+        <li><strong>Stream everything:</strong> partial STT, LLM tokens as generated, TTS by sentence. Small models + streaming ≈ realtime feel at a fraction of the cost.</li>
+        <li><strong>Cost control:</strong> cap context window, summarize old turns, and only pass the top-N relevant tools (see §09).</li>
+      </ul>
+    </section>
+
+    <!-- 09 -->
+    <section id="tools">
+      <h2><span class="num">09</span> Tool / skill framework</h2>
+      <p class="lead">Every capability is a function-calling tool. The core routes calls, executes, returns human-readable results, and emits a UI event.</p>
+      <pre><span class="c">// tool definition the model sees (keep description ≤ ~200 chars)</span>
+{
+  <span class="p">"type"</span>: <span class="s">"function"</span>,
+  <span class="p">"function"</span>: {
+    <span class="p">"name"</span>: <span class="s">"task_add"</span>,
+    <span class="p">"description"</span>: <span class="s">"Add a task. Call when the user asks to create/record a task."</span>,
+    <span class="p">"parameters"</span>: {
+      <span class="p">"type"</span>: <span class="s">"object"</span>,
+      <span class="p">"properties"</span>: {
+        <span class="p">"title"</span>: { <span class="p">"type"</span>: <span class="s">"string"</span> },
+        <span class="p">"board"</span>: { <span class="p">"type"</span>: <span class="s">"string"</span>, <span class="p">"description"</span>: <span class="s">"board id, default 'main'"</span> },
+        <span class="p">"column"</span>: { <span class="p">"type"</span>: <span class="s">"string"</span>, <span class="p">"enum"</span>: [<span class="s">"backlog"</span>,<span class="s">"today"</span>,<span class="s">"progress"</span>,<span class="s">"done"</span>] },
+        <span class="p">"due"</span>: { <span class="p">"type"</span>: <span class="s">"string"</span>, <span class="p">"description"</span>: <span class="s">"YYYY-MM-DD, optional"</span> }
+      },
+      <span class="p">"required"</span>: [<span class="s">"title"</span>]
+    }
+  }
+}</pre>
+      <h4>Rules (MUST)</h4>
+      <ul>
+        <li>Tool descriptions short; long behavior lives in the system prompt.</li>
+        <li>When many tools exist, pass only the <strong>top-N relevant</strong> to the model (keyword/embedding match on the user turn) — keeps context lean and the model accurate.</li>
+        <li>Every tool result is human-readable. <strong>Never swallow errors</strong> — surface them in chat.</li>
+        <li>Each successful call emits a Tauri event so the relevant panel re-renders live.</li>
+        <li><strong>No shell execution</strong> in the base build (see §13/§17).</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section id="modules">
+      <h2><span class="num">10</span> Feature modules</h2>
+      <p class="lead">Each is a topbar tab + a panel view + one or more tools. Behavior must match the prototype.</p>
+
+      <h3>Shell &amp; navigation</h3>
+      <ul>
+        <li>Topbar: brand · <strong>horizontal icon nav</strong> (active tab expands to show its label) · VOICE/CHAT mode toggle · status chips · audio + settings buttons.</li>
+        <li>Clicking the <strong>Chat</strong> tab switches mode to CHAT and focuses the composer; pressing the <strong>mic</strong> switches mode to VOICE and enters <code>listening</code>.</li>
+        <li>Left column: orb + voice-state label + waveform + mic button.</li>
+      </ul>
+
+      <h3>Modules</h3>
+      <table>
+        <thead><tr><th>Tab</th><th>Behavior</th><th>Tools</th></tr></thead>
+        <tbody>
+          <tr><td>Chat</td><td>Streaming dialog, tool-call cards, typed assistant replies, voice states.</td><td><em>orchestrator</em></td></tr>
+          <tr><td>Tasks</td><td><strong>Trello-style kanban</strong> with multiple <strong>boards</strong> (default “Main Dashboard”, “+ new board”), 4 columns, drag-and-drop, inline add.</td><td><code>task_add/move/list</code>, <code>board_add</code></td></tr>
+          <tr><td>Goals</td><td>North-star ring + horizons (Year/Quarter/Month/Week) with animated progress bars.</td><td><code>goal_add/update</code></td></tr>
+          <tr><td>Research</td><td>Search + hero brief + reading queue with AI summaries, source counts, status.</td><td><code>research_query</code> (web search + summarize)</td></tr>
+          <tr><td>Mail</td><td>“Connect Google account” gate → priority inbox, triage, one-line summaries, <strong>drafts only</strong> (never auto-send).</td><td><code>mail_triage/draft</code></td></tr>
+          <tr><td>Finance</td><td><strong>CoinKeeper logic</strong>: accounts + total balance, “safe to spend today”, category budget envelopes with rings, expense/income entry that updates balances + transactions live.</td><td><code>finance_add_expense/income</code>, <code>finance_summary</code></td></tr>
+          <tr><td>Tracker</td><td>Habits + day metrics + streak.</td><td><code>habit_log</code></td></tr>
+          <tr><td>Knowledge</td><td>Markdown vault: semantic search, tag filter, note cards with <code>[[wikilinks]]</code> + backlink counts.</td><td><code>vault_search/read/write</code></td></tr>
+          <tr><td>Connectors</td><td>Service grid (Google Calendar, Gmail, Drive, Slack, Notion, GitHub, Linear, Jira, Asana, Stripe, Zapier, Dropbox); connect/manage toggles; OAuth on user creds.</td><td>per-connector</td></tr>
+          <tr><td>Agents</td><td>See §11.</td><td><code>agent_run</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Settings (full page)</h3>
+      <ul>
+        <li>Profile (avatar from initials, name, email — live). Identity (first/last). Account &amp; security: <strong>email</strong> + <strong>change password</strong> (current/new/confirm, strength meter, validation). Assistant: wake word + core system prompt. Privacy toggles: local-only, cloud fallback, telemetry.</li>
+        <li>Persist to local storage / SQLite. The OpenAI key is entered here but stored in the OS keychain (§13), never rendered back.</li>
+      </ul>
+    </section>
+
+    <!-- 11 -->
+    <section id="agents">
+      <h2><span class="num">11</span> Agents</h2>
+      <p class="lead">User-built sub-agents derived from Jarvis, each with its own role, prompt, tools and knowledge.</p>
+      <ul>
+        <li><strong>List:</strong> agent cards (hexagon icon, role, prompt preview, stats: tools / knowledge bases / sources) with <strong>Run agent</strong> + edit.</li>
+        <li><strong>Builder:</strong> Identity (name, color, auto glyph) · <strong>Primary role</strong> (default directive) · System prompt · <strong>Capabilities</strong> (which tools it may use) · <strong>Knowledge bases</strong> (links to vault collections / KB paths, added separately) · <strong>Sources to study</strong> (repos / GitHubs / URLs it should review).</li>
+        <li><strong>Run:</strong> opens a <strong>modal chat</strong> scoped to that agent — its header, a greeting referencing its loaded KBs/sources, suggestion chips, and a task composer. Tasks run through the orchestrator with the agent's prompt + restricted tool set + its KB/source context injected.</li>
+      </ul>
+      <pre><span class="c">// agent record</span>
+{
+  <span class="p">id</span>, <span class="p">name</span>, <span class="p">color</span>, <span class="p">glyph</span>,
+  <span class="p">role</span>:    <span class="s">"primary directive (1 line)"</span>,
+  <span class="p">prompt</span>:  <span class="s">"system prompt"</span>,
+  <span class="p">caps</span>:    [<span class="s">"web"</span>,<span class="s">"vault"</span>,<span class="s">"mail"</span>, <span class="d">…</span>],   <span class="c">// allowed tool ids</span>
+  <span class="p">kbs</span>:     [<span class="s">"AI / on-device LLMs"</span>, <span class="d">…</span>],   <span class="c">// knowledge base links</span>
+  <span class="p">sources</span>: [<span class="s">"github.com/org/repo"</span>, <span class="d">…</span>]   <span class="c">// references to study</span>
+}</pre>
+    </section>
+
+    <!-- 12 -->
+    <section id="data">
+      <h2><span class="num">12</span> Data model</h2>
+      <p class="lead">SQLite for structured records; markdown vault for knowledge; localStorage for UI prefs.</p>
+      <pre><span class="k">CREATE TABLE</span> boards   (id TEXT PRIMARY KEY, name TEXT);
+<span class="k">CREATE TABLE</span> tasks    (id TEXT PK, board_id TEXT, col TEXT, title TEXT,
+                         pri TEXT, tag TEXT, due TEXT, created INTEGER);
+<span class="k">CREATE TABLE</span> goals    (id TEXT PK, horizon TEXT, title TEXT, sub TEXT, pct INTEGER);
+<span class="k">CREATE TABLE</span> accounts (id TEXT PK, name TEXT, balance REAL, color TEXT);
+<span class="k">CREATE TABLE</span> categories(id TEXT PK, name TEXT, budget REAL, spent REAL, color TEXT);
+<span class="k">CREATE TABLE</span> txns     (id TEXT PK, kind TEXT, cat TEXT, acct TEXT,
+                         amount REAL, label TEXT, ts INTEGER);
+<span class="k">CREATE TABLE</span> habits   (id TEXT PK, day TEXT, name TEXT, done INTEGER);
+<span class="k">CREATE TABLE</span> agents   (id TEXT PK, json TEXT);          <span class="c">-- serialized record</span>
+<span class="k">CREATE TABLE</span> messages (id TEXT PK, role TEXT, content TEXT, ts INTEGER);</pre>
+      <ul>
+        <li><strong>Vault:</strong> each note is a <code>.md</code> file with YAML frontmatter (type, date, tags, <code>[[links]]</code>). Two-way sync: edits in-app ↔ edits in the file. Obsidian-compatible.</li>
+        <li><strong>Semantic search:</strong> embed notes with <code>text-embedding-3-small</code>; store vectors in a local index (sqlite-vss or flat cosine for the prototype).</li>
+        <li><strong>Live UI:</strong> core <code>emit</code> on any write → panels <code>listen</code> and re-render. Persist active tab/entity.</li>
+      </ul>
+    </section>
+
+    <!-- 13 -->
+    <section id="security">
+      <h2><span class="num">13</span> Security &amp; privacy</h2>
+      <ul>
+        <li><strong>Secrets in keychain (MUST):</strong> OpenAI key + OAuth tokens go to OS keychain (Keychain / Credential Manager / libsecret), never plaintext, never in the bundle.</li>
+        <li><strong>Local by default; cloud opt-in.</strong> Only OpenAI egress, on the user's key.</li>
+        <li><strong>Computer control</strong> (files / screenshot / mouse / app automation) is a separate, permission-gated module, <strong>off by default</strong>, with per-capability toggles, a pre-action confirmation, an audit log, a global kill-switch, and permission timeouts. <strong>No arbitrary shell</strong> in the base build.</li>
+        <li><strong>Risky actions</strong> (delete, send, payments) require explicit “yes”.</li>
+        <li>No telemetry.</li>
+      </ul>
+    </section>
+
+    <!-- 14 -->
+    <section id="openai">
+      <h2><span class="num">14</span> OpenAI integration (the only AI dependency)</h2>
+      <p class="lead">All four OpenAI surfaces are called from Rust. The frontend never holds the key.</p>
+      <table>
+        <thead><tr><th>Surface</th><th>Model</th><th>Endpoint</th></tr></thead>
+        <tbody>
+          <tr><td>Transcription</td><td><code>gpt-4o-mini-transcribe</code> / <code>whisper-1</code></td><td><code>POST /v1/audio/transcriptions</code></td></tr>
+          <tr><td>Chat + tools</td><td><code>gpt-4o-mini</code></td><td><code>POST /v1/chat/completions</code> (<code>stream:true</code>)</td></tr>
+          <tr><td>Speech</td><td><code>gpt-4o-mini-tts</code> / <code>tts-1</code></td><td><code>POST /v1/audio/speech</code></td></tr>
+          <tr><td>Embeddings</td><td><code>text-embedding-3-small</code></td><td><code>POST /v1/embeddings</code></td></tr>
+        </tbody>
+      </table>
+      <h4>Key handling (MUST)</h4>
+      <pre><span class="c">// key resolution order, in Rust core only</span>
+<span class="d">1.</span> OS keychain  (<span class="s">"jarvis/openai_api_key"</span>)      <span class="c">// primary, set via Settings</span>
+<span class="d">2.</span> env <span class="p">OPENAI_API_KEY</span>                          <span class="c">// dev fallback</span>
+<span class="c">// NEVER: bundled in src/, logged, or sent to the WebView.</span></pre>
+      <h4>Streaming bridge</h4>
+      <pre><span class="c">// frontend</span>
+<span class="k">await</span> invoke(<span class="s">"chat_send"</span>, { text, mode });   <span class="c">// kicks off a turn</span>
+listen(<span class="s">"chat_token"</span>, e =&gt; appendToBubble(e.payload));   <span class="c">// streamed tokens</span>
+listen(<span class="s">"tool_call"</span>,  e =&gt; renderToolCard(e.payload));
+listen(<span class="s">"tts_amp"</span>,    e =&gt; ORB.amp(e.payload));         <span class="c">// drives orb</span></pre>
+      <div class="callout"><div class="ct">Cost &amp; resilience</div><p>Cap max tokens; summarize history beyond N turns; pass top-N tools only; retry with backoff on 429/5xx and show a clear inline error. Show a tiny live cost/usage readout (the prototype's status chips). Offer a model override in Settings.</p></div>
+    </section>
+
+    <!-- 15 -->
+    <section id="build">
+      <h2><span class="num">15</span> Build, run &amp; sprint order</h2>
+      <pre><span class="c"># prerequisites: Rust, Node, Tauri CLI</span>
+<span class="k">npm</span> install
+<span class="k">npm run</span> tauri dev            <span class="c"># dev (desktop)</span>
+<span class="k">npm run</span> tauri build          <span class="c"># .dmg / .msi / .AppImage</span>
+<span class="k">npm run</span> tauri android dev    <span class="c"># Android</span></pre>
+      <h4>Sprint order (ship in this sequence)</h4>
+      <ol>
+        <li><strong>Shell + loader + design system</strong> — the signature; build first. Include WebAudio SFX + failsafe.</li>
+        <li><strong>Chat + LLM (text)</strong> — orchestrator, function-calling, token streaming.</li>
+        <li><strong>Voice</strong> — STT + VAD + TTS, turn-taking (1.2–1.5s), barge-in, orb states.</li>
+        <li><strong>Skills framework + first tools</strong> — tasks/boards, goals, reminders.</li>
+        <li><strong>Knowledge vault</strong> — markdown sync + embeddings search.</li>
+        <li><strong>Panels</strong> — research, mail, finance, tracker, connectors.</li>
+        <li><strong>Agents</strong> — builder + run-chat.</li>
+        <li><strong>Computer control</strong> (permission-gated, optional) + multi-platform packaging + auto-update.</li>
+      </ol>
+    </section>
+
+    <!-- 16 -->
+    <section id="dod">
+      <h2><span class="num">16</span> Definition of done</h2>
+      <p class="lead">The build is accepted when every box is true.</p>
+      <ul class="check">
+        <li>Loader runs all phases, audio silent by 7s, never traps the UI (failsafe + reduced-motion verified).</li>
+        <li>Orb renders 4 states and pulses with live TTS amplitude.</li>
+        <li>Full voice loop works on an OpenAI key: speak → transcribe → stream reply → speak back, with barge-in and 1.2–1.5s turn-taking.</li>
+        <li>The OpenAI key is only ever in the Rust core / keychain; grep of the web bundle finds no key and no <code>api.openai.com</code> call.</li>
+        <li>Every module matches the prototype: kanban boards + DnD, goals rings, research, mail connect-gate + drafts-only, CoinKeeper finance with live balances, tracker, vault semantic search, connectors, agents builder + run-chat, full settings page.</li>
+        <li>At least 8 tools registered; tool calls update panels live via events; errors surface in chat.</li>
+        <li>Data persists across restarts (SQLite + vault); vault is Obsidian-compatible.</li>
+        <li>Computer-control stays off by default; no shell in base build; no telemetry.</li>
+        <li>Builds run on macOS, Windows, and Android from one codebase.</li>
+      </ul>
+    </section>
+
+    <!-- 17 -->
+    <section id="scope">
+      <h2><span class="num">17</span> Out of scope</h2>
+      <ul>
+        <li>OpenAI Realtime API (we stream a classic pipeline instead).</li>
+        <li>Arbitrary shell / root access in the base build (only the optional permission-gated module of §13).</li>
+        <li>Any non-OpenAI paid AI provider. The stack stays single-key.</li>
+        <li>Auto-sending email or executing payments without explicit confirmation.</li>
+      </ul>
+      <div class="end">J.A.R.V.I.S. — Architecture &amp; Build Specification · v1.0 · build exactly to this brief · local-first · OpenAI-key</div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

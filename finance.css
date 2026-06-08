@@ -1,0 +1,87 @@
+/* ============================================================
+   finance.css — CoinKeeper-style budgets, accounts, entry
+   ============================================================ */
+#view-finance{padding:22px}
+
+/* head: total + accounts + actions */
+.fin-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.fin-total{flex:0 0 auto}
+.fin-total .ft-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.fin-total .ft-val{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--accent);text-shadow:0 0 16px rgba(0,212,255,.3);margin-top:4px;letter-spacing:-.01em}
+.fin-accounts{display:flex;gap:10px;flex-wrap:wrap;flex:1;min-width:0}
+.acct{border:1px solid var(--glass-border);border-radius:11px;background:rgba(0,0,0,.24);padding:11px 15px;min-width:118px}
+.acct .a-name{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase}
+.acct .a-name .a-dot{width:7px;height:7px;border-radius:50%}
+.acct .a-bal{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--text);margin-top:5px}
+.fin-actions{display:flex;gap:9px;flex:0 0 auto}
+.fin-btn{font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:11px 16px;border-radius:9px;cursor:pointer;transition:var(--transition);border:1px solid var(--glass-border-hi)}
+.fin-btn.exp{color:var(--danger);background:rgba(255,68,102,.06)}
+.fin-btn.exp:hover{background:rgba(255,68,102,.13)}
+.fin-btn.inc{color:var(--ok);background:rgba(65,224,163,.06)}
+.fin-btn.inc:hover{background:rgba(65,224,163,.13)}
+
+/* quick entry */
+.fin-entry{border:1px solid var(--glass-border-hi);border-radius:13px;background:rgba(0,212,255,.04);padding:16px 18px;margin-bottom:22px;display:flex;flex-direction:column;gap:14px;max-width:880px}
+.fe-top{display:flex;align-items:center;gap:14px}
+.fe-seg{display:flex;background:rgba(0,0,0,.35);border:1px solid var(--glass-border);border-radius:9px;padding:3px;gap:2px}
+.fe-seg button{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--text-dim);background:none;border:none;padding:7px 15px;border-radius:7px;cursor:pointer;transition:var(--transition)}
+.fe-seg button.on{color:#021018;font-weight:600}
+.fe-seg button.on[data-m="expense"]{background:var(--danger)}
+.fe-seg button.on[data-m="income"]{background:var(--ok)}
+.fe-amt{display:flex;align-items:center;gap:6px;margin-left:auto}
+.fe-amt .cur{font-family:var(--mono);font-size:22px;color:var(--text-dim)}
+.fe-amt input{width:140px;background:none;border:none;border-bottom:1px solid var(--glass-border-hi);outline:none;color:var(--text);font-family:var(--mono);font-size:26px;font-weight:700;padding:2px 0;text-align:right}
+.fe-label{flex:1}
+.fe-label input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--glass-border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+.fe-block .fe-hint{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.fe-chips{display:flex;gap:8px;flex-wrap:wrap}
+.fe-chip{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--text-dim);border:1px solid var(--glass-border);border-radius:8px;padding:7px 12px;cursor:pointer;transition:var(--transition)}
+.fe-chip .fc-dot{width:8px;height:8px;border-radius:50%}
+.fe-chip:hover{border-color:var(--glass-border-hi)}
+.fe-chip.on{color:var(--text);border-color:var(--glass-border-hi);background:rgba(255,255,255,.05)}
+.fe-foot{display:flex;align-items:center;gap:10px}
+.fe-err{font-family:var(--mono);font-size:10.5px;color:var(--danger);letter-spacing:.06em;opacity:0;transition:opacity .2s}
+.fe-err.show{opacity:1}
+
+/* month summary / safe to spend */
+.fin-summary{display:flex;gap:14px;margin-bottom:22px;max-width:880px;flex-wrap:wrap}
+.safe{flex:1;min-width:220px;border:1px solid var(--glass-border-hi);border-radius:13px;background:linear-gradient(135deg,rgba(65,224,163,.07),rgba(0,0,0,.2));padding:18px 20px}
+.safe .s-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.safe .s-val{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--ok);text-shadow:0 0 14px rgba(65,224,163,.3);margin-top:5px}
+.safe .s-sub{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);margin-top:6px;letter-spacing:.04em}
+.mbudget{flex:1.4;min-width:280px;border:1px solid var(--glass-border);border-radius:13px;background:rgba(0,0,0,.22);padding:18px 20px}
+.mbudget .mb-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:.06em}
+.mbudget .mb-top b{color:var(--text);font-size:14px}
+.mbudget .bar-track{height:9px;margin-top:13px}
+.mbudget .mb-legend{display:flex;justify-content:space-between;margin-top:11px;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em}
+.mbudget .mb-legend .over{color:var(--danger)}
+
+/* category envelopes with rings */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;max-width:880px;margin-bottom:8px}
+.cat{display:flex;flex-direction:column;align-items:center;gap:11px;padding:18px 14px;border:1px solid var(--glass-border);border-radius:13px;background:rgba(0,0,0,.22);cursor:pointer;transition:var(--transition)}
+.cat:hover{border-color:var(--glass-border-hi);transform:translateY(-2px);background:rgba(0,212,255,.03)}
+.cring{width:86px;height:86px;border-radius:50%;position:relative;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.06) 0)}
+.cring::before{content:"";position:absolute;inset:8px;border-radius:50%;background:#060b12}
+.cring .cp{position:relative;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--c)}
+.cat.over .cring{background:conic-gradient(var(--danger) 100%,var(--danger) 0)}
+.cat.over .cring .cp{color:var(--danger)}
+.cat .cname{font-size:13.5px;font-weight:500;text-align:center}
+.cat .cmeta{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.03em;text-align:center}
+.cat .cleft{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em}
+.cat .cleft.ok{color:var(--ok)}
+.cat .cleft.bad{color:var(--danger)}
+
+/* transactions */
+.txn-list{max-width:880px;border:1px solid var(--glass-border);border-radius:13px;background:rgba(0,0,0,.18);overflow:hidden}
+.txn{display:flex;align-items:center;gap:14px;padding:13px 17px;border-bottom:1px solid var(--glass-border);transition:background .2s}
+.txn:last-child{border-bottom:none}
+.txn:hover{background:rgba(255,255,255,.02)}
+.txn .t-ico{flex:0 0 32px;height:32px;border-radius:9px;display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#06080c}
+.txn .t-main{flex:1;min-width:0}
+.txn .t-label{font-size:13.5px;color:var(--text)}
+.txn .t-sub{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.05em;margin-top:3px}
+.txn .t-amt{font-family:var(--mono);font-size:14px;font-weight:600}
+.txn .t-amt.neg{color:var(--danger)}
+.txn .t-amt.pos{color:var(--ok)}
+.txn.flash{animation:txnflash 1s ease}
+@keyframes txnflash{0%{background:rgba(0,212,255,.18)}100%{background:transparent}}
