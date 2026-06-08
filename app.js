@@ -21,7 +21,7 @@
     $('#vs-label').textContent = VS[mode].label;
     $('#vs-sub').textContent = sub ?? VS[mode].sub;
     const conn = $('#chip-voice .led');
-    conn.className = 'led' + (mode==='idle'?' warn':'');
+    if(conn) conn.className = 'led' + (mode==='idle'?' warn':'');
   }
 
   // fake amplitude feed to orb + wave bars
