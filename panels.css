@@ -128,23 +128,25 @@
 .gbtn.linking{opacity:.7;pointer-events:none}
 
 /* ---------- TOPBAR · horizontal nav ---------- */
-#topbar{height:60px;gap:16px}
+#topbar{height:72px;gap:16px}
 .brand{flex:0 0 auto}
 .topnav{display:flex;align-items:center;gap:4px;flex:1;min-width:0;margin-left:6px}
-.topnav .tab{position:relative;width:auto;height:38px;min-width:38px;padding:0 9px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:0;color:var(--text-dim);border:1px solid transparent;cursor:pointer;transition:background .25s,color .25s,border-color .25s,padding .3s,gap .3s}
+.topnav .tab{position:relative;width:auto;min-width:54px;height:auto;padding:7px 8px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text-dim);border:1px solid transparent;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
 .topnav .tab:hover{color:var(--text);background:rgba(0,212,255,.06)}
-.topnav .tab.active{color:var(--accent);background:rgba(0,212,255,.1);border-color:var(--glass-border-hi);gap:9px;padding:0 15px 0 12px}
+.topnav .tab.active{color:var(--accent);background:rgba(0,212,255,.1);border-color:var(--glass-border-hi)}
 .topnav .tab.active::before{display:none}
 .topnav .tab svg{flex:0 0 auto}
-.topnav .tab .tlabel{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width .35s cubic-bezier(.4,0,.2,1),opacity .25s}
-.topnav .tab.active .tlabel{max-width:130px;opacity:1}
-.topnav .tab .badge{position:absolute;top:1px;right:1px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--danger);color:#fff;font-size:9px;font-family:var(--mono);display:grid;place-items:center;font-weight:600;z-index:2}
+.topnav .tab .tlabel{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;opacity:.9}
+.topnav .tab.active .tlabel{opacity:1}
+.topnav .tab .badge{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--danger);color:#fff;font-size:9px;font-family:var(--mono);display:grid;place-items:center;font-weight:600;z-index:2}
 .topright{display:flex;align-items:center;gap:10px;flex:0 0 auto;margin-left:auto}
 .topright .mode-toggle{margin:0}
 .topright .indicators{margin-left:0}
 @media (max-width:1200px){
   .topright .chip{display:none}
-  .topnav .tab.active .tlabel{max-width:96px}
+  .topnav{gap:2px}
+  .topnav .tab{min-width:48px;padding:6px 5px 5px}
+  .topnav .tab .tlabel{font-size:9px;letter-spacing:.08em}
 }
 
 /* ---------- GOALS ---------- */
