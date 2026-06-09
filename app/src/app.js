@@ -162,6 +162,7 @@
       };
     }catch(e){ return null; }
   }
+  window.JSTATE = gatherState;   // shared with agents.js
 
   // persona (system prompt + name) from Settings → core
   function gatherPersona(){

@@ -11,8 +11,9 @@ use tauri::{AppHandle, Emitter};
 const ENDPOINT: &str = "https://api.openai.com/v1/chat/completions";
 
 /// One non-streaming completion. Returns `choices[0].message` (which may
-/// contain `tool_calls`). Used for the tool-decision round.
-pub async fn complete(messages: Value, with_tools: bool) -> Result<Value, String> {
+/// contain `tool_calls`). Used for the tool-decision round. `tools`, when
+/// present, is the (possibly filtered) tool-definition array.
+pub async fn complete(messages: Value, tools: Option<Value>) -> Result<Value, String> {
     let key = super::resolve_key()
         .ok_or("No OpenAI API key set. Add it in Settings (or set OPENAI_API_KEY).")?;
 
@@ -21,8 +22,8 @@ pub async fn complete(messages: Value, with_tools: bool) -> Result<Value, String
         "messages": messages,
         "temperature": 0.5
     });
-    if with_tools {
-        body["tools"] = crate::tools::definitions();
+    if let Some(t) = tools {
+        body["tools"] = t;
         body["tool_choice"] = json!("auto");
     }
 
@@ -45,8 +46,9 @@ pub async fn complete(messages: Value, with_tools: bool) -> Result<Value, String
     Ok(v["choices"][0]["message"].clone())
 }
 
-/// `messages` is a JSON array of {role, content} objects.
-pub async fn stream_chat(app: &AppHandle, messages: Value) -> Result<(), String> {
+/// `messages` is a JSON array of {role, content} objects. Streamed tokens are
+/// emitted on `token_event` (e.g. "chat_token" or "agent_token").
+pub async fn stream_chat(app: &AppHandle, messages: Value, token_event: &str) -> Result<(), String> {
     let key = super::resolve_key()
         .ok_or("No OpenAI API key set. Add it in Settings (or set OPENAI_API_KEY).")?;
 
@@ -91,7 +93,7 @@ pub async fn stream_chat(app: &AppHandle, messages: Value) -> Result<(), String>
             if let Ok(v) = serde_json::from_str::<Value>(data) {
                 if let Some(tok) = v["choices"][0]["delta"]["content"].as_str() {
                     if !tok.is_empty() {
-                        let _ = app.emit("chat_token", tok);
+                        let _ = app.emit(token_event, tok);
                     }
                 }
             }

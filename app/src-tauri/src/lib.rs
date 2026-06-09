@@ -39,6 +39,27 @@ async fn chat_send(
     Ok(())
 }
 
+/// Run a sub-agent turn. Streams on the `agent_*` event channel with tools
+/// restricted to the agent's capabilities.
+#[tauri::command]
+async fn agent_send(
+    app: AppHandle,
+    text: String,
+    caps: Vec<String>,
+    state: Option<serde_json::Value>,
+    persona: Option<serde_json::Value>,
+) -> Result<(), String> {
+    orchestrator::handle_agent_turn(
+        app,
+        text,
+        state.unwrap_or(serde_json::Value::Null),
+        persona.unwrap_or(serde_json::Value::Null),
+        caps,
+    )
+    .await;
+    Ok(())
+}
+
 /// Store the OpenAI key in the OS keychain (entered in Settings). Passing an
 /// empty string clears it. The key is never returned to the WebView.
 #[tauri::command]
@@ -73,6 +94,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             ping,
             chat_send,
+            agent_send,
             set_api_key,
             has_api_key,
             transcribe,

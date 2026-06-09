@@ -235,10 +235,46 @@
     stream.scrollTop=stream.scrollHeight;
     return el;
   }
+  /* ---------- core-backed agent run (Tauri): stream on agent_* channel ---------- */
+  let agentBubble=null, agentTyping=null, agentReply='';
+  function agentTok(tok){
+    if(agentTyping){ agentTyping.remove(); agentTyping=null; }
+    if(!agentBubble){ const el=runMsg('a','',true); agentBubble=el.querySelector('.txt'); }
+    agentBubble.textContent += tok; agentReply += tok;
+    const s=$('#run-stream'); if(s) s.scrollTop=s.scrollHeight;
+  }
+  function agentTool(tc){
+    if(agentTyping){ agentTyping.remove(); agentTyping=null; }
+    const color=runAgent?runAgent.color:'#00d4ff', glyph=runAgent?runAgent.glyph:'A', name=runAgent?runAgent.name:'Agent';
+    const el=document.createElement('div'); el.className='msg j';
+    el.innerHTML=`<div class="av" style="background:${color};color:#06080c">${esc(glyph)}</div><div class="body"><div class="who">${esc(name)}</div><div class="txt"><div class="tool-call"><div class="tc-head">⚙ tool · ${esc(tc.name)}<span class="tc-ok">✓ ok</span></div><div class="tc-body">${esc(JSON.stringify(tc.args||{}))}</div></div></div></div>`;
+    $('#run-stream').appendChild(el); $('#run-stream').scrollTop=$('#run-stream').scrollHeight;
+    agentBubble=null;
+    try{ window.JTOOLS && window.JTOOLS[tc.name] && window.JTOOLS[tc.name](tc.args||{}); }catch(e){}
+  }
+  async function initAgentCore(){
+    if(!(window.BRIDGE && window.BRIDGE.inTauri)) return;
+    await BRIDGE.listen('agent_token', agentTok);
+    await BRIDGE.listen('agent_tool_call', agentTool);
+    await BRIDGE.listen('agent_done', ()=>{ agentBubble=null; });
+  }
+
   function sendRun(){
     const inp=$('#run-input'); const v=inp.value.trim(); if(!v||!runAgent) return;
     inp.value=''; runMsg('u', v); A.SFX.blip();
     const a=runAgent;
+
+    // route through the core when running in the Tauri app
+    if(window.BRIDGE && window.BRIDGE.inTauri){
+      agentBubble=null; agentReply='';
+      agentTyping=document.createElement('div'); agentTyping.className='msg j';
+      agentTyping.innerHTML=`<div class="av" style="background:${a.color};color:#06080c">${esc(a.glyph)}</div><div class="body"><div class="who">${esc(a.name)}</div><div class="typing"><span></span><span></span><span></span></div></div>`;
+      $('#run-stream').appendChild(agentTyping); $('#run-stream').scrollTop=$('#run-stream').scrollHeight;
+      BRIDGE.invoke('agent_send', { text:v, caps:a.caps||[], state:(window.JSTATE?window.JSTATE():null), persona:{ prompt:a.prompt||'', name:'' } })
+        .catch(err=>{ if(agentTyping){agentTyping.remove();agentTyping=null;} runMsg('a','Core error: '+String(err), true); });
+      return;
+    }
+
     // typing indicator
     const t=document.createElement('div'); t.className='msg j';
     t.innerHTML=`<div class="av" style="background:${a.color};color:#06080c">${esc(a.glyph)}</div><div class="body"><div class="who">${esc(a.name)}</div><div class="typing"><span></span><span></span><span></span></div></div>`;
@@ -286,4 +322,5 @@
 
   injectOverlays();
   renderGrid();
+  initAgentCore();
 })();
