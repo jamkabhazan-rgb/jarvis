@@ -186,14 +186,14 @@
   function finish(){
     if(boot.finished) return;
     boot.finished=true;
-    A.setMaster(0.9);   // re-enable audio for the app after the 7s loader mute
+    A.setMaster(0);   // keep the app silent — sound is loader-only
     window.APP?.onReady?.();
   }
   function forceReveal(){
     if(boot.finished) return;
     boot.finished=true;
     try{ stopDrone(); }catch(e){}
-    try{ A.setMaster(0.9); }catch(e){}
+    try{ A.setMaster(0); }catch(e){}
     const overlay=$('#boot'); if(overlay){ overlay.style.display='none'; }
     document.getElementById('app')?.classList.remove('booting');
     ['topbar','orbcol','panelcol'].forEach(showSection);
@@ -205,6 +205,7 @@
     document.getElementById('app')?.classList.remove('booting');
     ['topbar','orbcol','panelcol'].forEach(showSection);
     boot.finished=true;
+    try{ A.setMaster(0); }catch(e){}   // keep the app silent — sound is loader-only
     window.APP?.onReady?.();
   }
 
