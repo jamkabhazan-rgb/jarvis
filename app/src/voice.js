@@ -95,10 +95,12 @@
     window.ORB?.amp(0.05);
   }
 
-  function stopPlayback(){ try{ curSrc?.stop(); }catch(e){} curSrc=null; }
+  function stopPlayback(){ queue.length=0; idleWaiters.length=0; try{ curSrc?.stop(); }catch(e){} curSrc=null; playing=false; }
 
-  // synthesize + play; resolves when playback ends. Drives ORB amplitude.
-  function speak(text){
+  // ---- TTS queue: speak sentence-by-sentence as they arrive ----
+  let queue=[], playing=false, idleWaiters=[];
+
+  function playOne(text){
     return new Promise(async resolve=>{
       if(!inTauri() || !text || !text.trim()){ resolve(); return; }
       let b64; try{ b64 = await BRIDGE.invoke('speak', { text }); }catch(e){ resolve(); return; }
@@ -106,7 +108,6 @@
       const bytes = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
       if(ctx().state==='suspended') try{ await ctx().resume(); }catch(e){}
       let buf; try{ buf = await ctx().decodeAudioData(bytes.buffer); }catch(e){ resolve(); return; }
-      stopPlayback();
       const src = ctx().createBufferSource(); src.buffer = buf;
       const an = ctx().createAnalyser(); an.fftSize = 256;
       src.connect(an); an.connect(ctx().destination);
@@ -119,13 +120,30 @@
         window.ORB?.amp(Math.min(1, (s/data.length)/110));
         requestAnimationFrame(tick);
       })();
-      src.onended = ()=>{ if(curSrc===src) curSrc=null; window.ORB?.amp(0.05); window.ORB?.set('idle'); resolve(); };
+      src.onended = ()=>{ if(curSrc===src) curSrc=null; resolve(); };
     });
   }
+  function drain(){
+    if(queue.length){ playing=true; const t=queue.shift(); playOne(t).then(drain); }
+    else { playing=false; window.ORB?.amp(0.05); window.ORB?.set('idle'); idleWaiters.splice(0).forEach(r=>r()); }
+  }
+  function enqueueSpeak(text){
+    if(!inTauri() || !text || !text.trim()) return;
+    queue.push(text.trim());
+    if(!playing) drain();
+  }
+  // resolves when the queue has fully drained (used to resume listening)
+  function whenIdle(){
+    return new Promise(res=>{ if(!playing && queue.length===0) res(); else idleWaiters.push(res); });
+  }
+  // one-shot convenience: speak text then resolve when done
+  function speak(text){ enqueueSpeak(text); return whenIdle(); }
 
   window.VOICE = {
-    inTauri, startListening, pause, resume, stopListening, stopPlayback, speak,
+    inTauri, startListening, pause, resume, stopListening, stopPlayback,
+    speak, enqueueSpeak, whenIdle,
     get listening(){ return listening; },
-    get active(){ return listening || !!curSrc; }
+    get speaking(){ return playing; },
+    get active(){ return listening || playing || !!curSrc; }
   };
 })();
