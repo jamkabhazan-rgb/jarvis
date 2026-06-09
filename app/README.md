@@ -57,6 +57,14 @@ core (`chat_send` → `chat_token`/`chat_done` events).
 The key is stored in the native keychain — macOS Keychain and Windows
 Credential Manager — so no extra system packages are needed on either target.
 
+### Microphone
+
+Voice is hands-free: press the mic once to start listening; local VAD ends each
+turn after ~1.3s of silence, transcribes, replies, speaks, and resumes. Press
+the mic again to stop. macOS asks for mic permission on first use
+(`NSMicrophoneUsageDescription` is set in `src-tauri/Info.plist`); Windows
+prompts via WebView2.
+
 ### Icons
 
 `tauri build` needs icons in `src-tauri/icons/`. Generate them once with
@@ -68,7 +76,7 @@ Credential Manager — so no extra system packages are needed on either target.
 |---|--------|-------------|--------|
 | 1 | **Shell + loader + design system** | Tauri shell, cinematic loader, WebAudio SFX, failsafe, the dark-glass UI + nav/panels. The signature — built first. | **scaffolded** |
 | 2 | **Chat + LLM (text)** | Orchestrator, OpenAI chat-completions with `tools`, token streaming to the chat UI, tool-call deltas. | **in progress** — real streaming chat-completions in the core, key in OS keychain, chat UI wired via events. Tool-call deltas next |
-| 3 | **Voice** | Mic capture + local VAD (1.2–1.5s turn-taking), STT, TTS per sentence, barge-in, orb states driven by live TTS amplitude. | **in progress** — mic capture → STT → chat → TTS playback with orb-amplitude reactivity; press-mic barge-in. Local VAD/auto end-of-turn + per-sentence TTS next |
+| 3 | **Voice** | Mic capture + local VAD (1.2–1.5s turn-taking), STT, TTS per sentence, barge-in, orb states driven by live TTS amplitude. | **working** — hands-free loop: mic → energy VAD (~1.3s end-of-turn) → STT → chat(+tools) → TTS, orb driven by live mic/voice amplitude, barge-in. Per-sentence TTS streaming is a later optimization |
 | 4 | **Skills framework + first tools** | Tool router + events; tasks/boards, goals, reminders against SQLite. ≥8 tools registered, panels re-render live. | **in progress** — function-calling live: core advertises tools, runs `tool_call`, emits events; panels apply them (task_add, note_add, finance_add_expense, research_query). Local persistence via `store.js`; SQLite-in-core + more tools next |
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |
 | 6 | **Panels** | Research, mail (connect-gate + drafts-only), finance (CoinKeeper logic), tracker, connectors. | **in progress** — finance/tracker/connectors persisted; research queue interactive + persisted; mail gate persists. Real web-search/Gmail wiring later |

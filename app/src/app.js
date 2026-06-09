@@ -32,7 +32,8 @@
     else if(voiceMode==='speaking') amp = 0.3+Math.random()*0.6;
     else if(voiceMode==='thinking') amp = 0.15+Math.random()*0.2;
     else amp = 0.05+Math.random()*0.05;
-    window.ORB?.amp(amp);
+    // in the Tauri voice loop the orb is driven by real mic/TTS amplitude
+    if(!(window.VOICE && window.VOICE.active)) window.ORB?.amp(amp);
     bars.forEach((b,i)=>{
       const f = Math.sin(Date.now()/120 + i*0.7)*0.5+0.5;
       b.style.height = (6 + amp*f*26) + 'px';
@@ -47,18 +48,15 @@
     btn.classList.toggle('live', live);
     $$('.mode-toggle button').forEach(x=>x.classList.toggle('active', x.textContent.trim()==='VOICE'));
 
-    // Real voice loop in the Tauri app: record -> transcribe -> chat -> speak
+    // Hands-free voice loop in the Tauri app: VAD auto-ends each turn
     if(window.VOICE && window.VOICE.inTauri()){
       window.VOICE.stopPlayback();          // barge-in: cut any TTS in progress
       if(live){
-        setVoice('listening');
-        window.VOICE.startRec().catch(()=>{ live=false; btn.classList.remove('live'); setVoice('idle','Mic unavailable'); });
+        setVoice('listening','Listening… just talk');
+        window.VOICE.startListening(onVoiceUtterance)
+          .catch(()=>{ live=false; btn.classList.remove('live'); setVoice('idle','Mic unavailable'); });
       } else {
-        setVoice('thinking','Transcribing…');
-        window.VOICE.transcribe().then(text=>{
-          if(text && text.trim()){ voiceTurn=true; handleUserCore(text.trim()); }
-          else setVoice('idle');
-        }).catch(()=>setVoice('idle','Transcription failed'));
+        window.VOICE.stopListening(); setVoice('idle');
       }
       return;
     }
@@ -123,8 +121,16 @@
     await BRIDGE.listen('chat_done', ()=>{
       coreBubble=null;
       const reply=coreReply; coreReply='';
-      if(voiceTurn){ voiceTurn=false; window.VOICE?.speak(reply); }
-      setVoice(live?'listening':'idle');
+      if(voiceTurn){
+        voiceTurn=false;
+        setVoice('speaking','');
+        window.VOICE?.speak(reply).then(()=>{
+          if(live && window.VOICE?.inTauri()){ setVoice('listening'); window.VOICE.resume(); }
+          else setVoice('idle');
+        });
+      } else {
+        setVoice(live?'listening':'idle');
+      }
     });
     await BRIDGE.listen('tool_call', tc=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
@@ -149,6 +155,13 @@
       addMsg('j','Core error: '+escapeHtml(String(err)));
       setVoice(live?'listening':'idle');
     });
+  }
+
+  // a VAD-detected utterance: pause listening, run the turn, speak the reply
+  function onVoiceUtterance(text){
+    window.VOICE?.pause();
+    voiceTurn=true;
+    handleUserCore(text);
   }
 
   function handleUser(text){
