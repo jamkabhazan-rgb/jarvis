@@ -17,7 +17,7 @@
   const KB_OPTS = ['Engineering','AI / on-device LLMs','Materials','Meetings','Research','Personal'];
   const capName = id => (CAPS.find(c=>c.id===id)||{}).name || id;
 
-  let AGENTS = [
+  const DEFAULT_AGENTS = [
     { id:'a1', name:'Research Analyst', color:'#00d4ff', glyph:'R',
       role:'Search the web, read sources and synthesize briefs',
       prompt:'You are a meticulous research analyst. Gather multiple sources, cross-check claims, and return a tight summary with citations. Flag uncertainty. Never pad.',
@@ -35,7 +35,10 @@
       caps:['code','web','vault'],
       kbs:['Engineering'], sources:['github.com/starkindustries/jarvis'] },
   ];
-  let uid = 10;
+  const ap = STORE.load('agents', null);
+  let AGENTS = (ap && ap.agents) || DEFAULT_AGENTS;
+  let uid = (ap && ap.uid) || 10;
+  function saveAgents(){ STORE.save('agents', { agents:AGENTS, uid }); }
 
   /* ---------- render grid ---------- */
   function iconHTML(a, big){
@@ -189,7 +192,7 @@
     draft.glyph = (draft.glyph || draft.name.trim()[0]).toUpperCase();
     if(editingId){ const idx=AGENTS.findIndex(a=>a.id===editingId); if(idx>=0) AGENTS[idx]=draft; }
     else { draft.id='a'+(++uid); AGENTS.push(draft); }
-    A.SFX.chime(); renderGrid(); closeBuilder();
+    saveAgents(); A.SFX.chime(); renderGrid(); closeBuilder();
   }
 
   /* ---------- run chat ---------- */

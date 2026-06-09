@@ -14,7 +14,7 @@
     { id:'done',     title:'Done',        color:'#41e0a3' },
   ];
   const PRI = { high:'#ff4466', med:'#ffb347', low:'#4a5568' };
-  let BOARDS = [
+  const DEFAULT_BOARDS = [
     { id:'main', name:'Main Dashboard', tasks:[
       { id:1, col:'today',    text:'Review Mark VII telemetry',        pri:'high', tag:'workshop', due:'18:00' },
       { id:2, col:'today',    text:'Call Pepper re: SI board',         pri:'med',  tag:'call',     due:'15:30' },
@@ -31,9 +31,14 @@
       { id:12, col:'today',   text:'Run repulsor stress test',          pri:'high', tag:'test',      due:'' },
     ]},
   ];
-  let activeBoard = 'main';
-  let uid = 100, bid = 10, dragId = null;
+  const persistedTasks = STORE.load('tasks', null);
+  let BOARDS = (persistedTasks && persistedTasks.boards) || DEFAULT_BOARDS;
+  let activeBoard = (persistedTasks && persistedTasks.activeBoard) || 'main';
+  let uid = (persistedTasks && persistedTasks.uid) || 100;
+  let bid = (persistedTasks && persistedTasks.bid) || 10;
+  let dragId = null;
   const board = () => BOARDS.find(b=>b.id===activeBoard) || BOARDS[0];
+  function saveTasks(){ STORE.save('tasks', { boards:BOARDS, activeBoard, uid, bid }); }
 
   function renderBoards(){
     const bar = $('#board-bar'); if(!bar) return;
@@ -42,7 +47,7 @@
       const pill = document.createElement('div');
       pill.className = 'board-pill' + (b.id===activeBoard?' active':'');
       pill.innerHTML = `<span class="bp-name">${esc(b.name)}</span><span class="bp-count">${b.tasks.length}</span>`;
-      pill.addEventListener('click', ()=>{ activeBoard=b.id; A.SFX.tab(); renderBoards(); renderKanban(); });
+      pill.addEventListener('click', ()=>{ activeBoard=b.id; saveTasks(); A.SFX.tab(); renderBoards(); renderKanban(); });
       bar.appendChild(pill);
     });
     const add = document.createElement('div');
@@ -61,7 +66,7 @@
     const commit = ()=>{
       if(done) return; done=true;
       const v = inp.value.trim();
-      if(v){ const id='b'+(++bid); BOARDS.push({id, name:v, tasks:[]}); activeBoard=id; A.SFX.listen(); renderBoards(); renderKanban(); }
+      if(v){ const id='b'+(++bid); BOARDS.push({id, name:v, tasks:[]}); activeBoard=id; saveTasks(); A.SFX.listen(); renderBoards(); renderKanban(); }
       else { inp.remove(); }
     };
     inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); commit(); } if(e.key==='Escape') inp.remove(); });
@@ -107,7 +112,7 @@
         e.preventDefault(); col.classList.remove('dragover');
         if(dragId==null) return;
         const t = board().tasks.find(x=>x.id===dragId);
-        if(t && t.col!==c.id){ t.col=c.id; A.SFX.tab(); renderKanban(); }
+        if(t && t.col!==c.id){ t.col=c.id; saveTasks(); A.SFX.tab(); renderKanban(); }
       });
 
       // add task
@@ -126,7 +131,7 @@
     const commit = ()=>{
       if(done) return; done=true;
       const v = ta.value.trim();
-      if(v){ board().tasks.push({id:++uid, col:colId, text:v, pri:'med', tag:'', due:''}); A.SFX.listen(); renderKanban(); }
+      if(v){ board().tasks.push({id:++uid, col:colId, text:v, pri:'med', tag:'', due:''}); saveTasks(); A.SFX.listen(); renderKanban(); }
       else { ta.remove(); }
     };
     ta.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); commit(); } if(e.key==='Escape') ta.remove(); });
