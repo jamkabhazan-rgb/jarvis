@@ -72,4 +72,8 @@
   }
   if(document.readyState!=='loading') init();
   else document.addEventListener('DOMContentLoaded', init);
+
+  // tool-call handler (core → panel): queue a research task
+  window.JTOOLS = window.JTOOLS || {};
+  window.JTOOLS.research_query = (a)=>{ runQuery(a.query||''); };
 })();

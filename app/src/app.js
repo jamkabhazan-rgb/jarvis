@@ -106,6 +106,19 @@
       coreBubble.textContent += tok; scrollBottom();
     });
     await BRIDGE.listen('chat_done', ()=>{ coreBubble=null; setVoice(live?'listening':'idle'); });
+    await BRIDGE.listen('tool_call', tc=>{
+      if(coreTyping){ coreTyping.remove(); coreTyping=null; }
+      renderToolCard(tc);
+      coreBubble=null; // next chat_token starts a fresh reply bubble
+      try{ window.JTOOLS && window.JTOOLS[tc.name] && window.JTOOLS[tc.name](tc.args||{}); }catch(e){ console.warn('tool apply failed', e); }
+    });
+  }
+  function renderToolCard(tc){
+    const body = tc.args ? JSON.stringify(tc.args) : '';
+    const html = `<div class="tool-call"><div class="tc-head">⚙ tool · ${escapeHtml(tc.name)}<span class="tc-ok">✓ ok</span></div><div class="tc-body">${escapeHtml(body)}</div></div>`;
+    const el=document.createElement('div'); el.className='msg j';
+    el.innerHTML=`<div class="av">J</div><div class="body"><div class="who">JARVIS</div><div class="txt">${html}</div></div>`;
+    stream.appendChild(el); scrollBottom();
   }
   function handleUserCore(text){
     addMsg('u', escapeHtml(text));

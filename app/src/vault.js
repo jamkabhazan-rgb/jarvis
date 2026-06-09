@@ -142,4 +142,13 @@
   }
   if(document.readyState!=='loading') init();
   else document.addEventListener('DOMContentLoaded', init);
+
+  // tool-call handler (core → panel): create a note
+  window.JTOOLS = window.JTOOLS || {};
+  window.JTOOLS.note_add = (a)=>{
+    const tags = Array.isArray(a.tags) ? a.tags
+      : (a.tags ? String(a.tags).split(',').map(t=>t.trim()).filter(Boolean) : []);
+    NOTES.push({ id:'n'+(++nid), title:a.title||'Untitled', body:a.body||'', tags, updated:Date.now() });
+    save(); renderTags(); renderGrid();
+  };
 })();

@@ -326,4 +326,12 @@
   // restore mail "connected" view if Gmail was linked
   if(SERVICES.find(s=>s.name==='Gmail')?.linked) setMailConnected(true);
   loadSettings();
+
+  // tool-call handler (core → panel): create a task
+  window.JTOOLS = window.JTOOLS || {};
+  window.JTOOLS.task_add = (a)=>{
+    const col = ['backlog','today','progress','done'].includes(a.column) ? a.column : 'today';
+    board().tasks.push({ id:++uid, col, text:a.title||'Untitled task', pri:'med', tag:'', due:'' });
+    saveTasks(); renderBoards(); renderKanban();
+  };
 })();

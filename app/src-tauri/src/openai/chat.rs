@@ -10,6 +10,41 @@ use tauri::{AppHandle, Emitter};
 
 const ENDPOINT: &str = "https://api.openai.com/v1/chat/completions";
 
+/// One non-streaming completion. Returns `choices[0].message` (which may
+/// contain `tool_calls`). Used for the tool-decision round.
+pub async fn complete(messages: Value, with_tools: bool) -> Result<Value, String> {
+    let key = super::resolve_key()
+        .ok_or("No OpenAI API key set. Add it in Settings (or set OPENAI_API_KEY).")?;
+
+    let mut body = json!({
+        "model": super::MODEL_CHAT,
+        "messages": messages,
+        "temperature": 0.5
+    });
+    if with_tools {
+        body["tools"] = crate::tools::definitions();
+        body["tool_choice"] = json!("auto");
+    }
+
+    let client = reqwest::Client::new();
+    let resp = client
+        .post(ENDPOINT)
+        .bearer_auth(key)
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let detail = resp.text().await.unwrap_or_default();
+        return Err(format!("OpenAI {}: {}", status, detail));
+    }
+
+    let v: Value = resp.json().await.map_err(|e| e.to_string())?;
+    Ok(v["choices"][0]["message"].clone())
+}
+
 /// `messages` is a JSON array of {role, content} objects.
 pub async fn stream_chat(app: &AppHandle, messages: Value) -> Result<(), String> {
     let key = super::resolve_key()

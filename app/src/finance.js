@@ -168,6 +168,14 @@
 
   function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+  // tool-call handler (core → panel): record an expense
+  window.JTOOLS = window.JTOOLS || {};
+  window.JTOOLS.finance_add_expense = (a)=>{
+    const q = String(a.category||'').toLowerCase();
+    const c = CATS.find(x=>x.id===q) || CATS.find(x=>x.name.toLowerCase()===q) || CATS[0];
+    addExpense(c.id, 'card', Number(a.amount)||0, a.label||'');
+  };
+
   // wire top buttons (exist in DOM)
   document.addEventListener('DOMContentLoaded', init);
   if(document.readyState!=='loading') init();
