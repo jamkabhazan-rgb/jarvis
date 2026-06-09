@@ -96,7 +96,30 @@
   ];
   const DEFAULT_SAY = 'Understood. I’m running everything locally — give me a task, a question, or just talk.';
 
+  /* ---------- core-backed chat (Tauri): stream via events ---------- */
+  let coreBubble=null, coreTyping=null;
+  async function initCore(){
+    if(!(window.BRIDGE && window.BRIDGE.inTauri)) return;
+    await BRIDGE.listen('chat_token', tok=>{
+      if(coreTyping){ coreTyping.remove(); coreTyping=null; }
+      if(!coreBubble){ const e=addMsg('j',''); coreBubble=e.querySelector('.txt'); setVoice('speaking',''); }
+      coreBubble.textContent += tok; scrollBottom();
+    });
+    await BRIDGE.listen('chat_done', ()=>{ coreBubble=null; setVoice(live?'listening':'idle'); });
+  }
+  function handleUserCore(text){
+    addMsg('u', escapeHtml(text));
+    setVoice('thinking','Routing through core…');
+    coreBubble=null; coreTyping=typingEl();
+    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat' }).catch(err=>{
+      if(coreTyping){ coreTyping.remove(); coreTyping=null; }
+      addMsg('j','Core error: '+escapeHtml(String(err)));
+      setVoice(live?'listening':'idle');
+    });
+  }
+
   function handleUser(text){
+    if(window.BRIDGE && window.BRIDGE.inTauri) return handleUserCore(text);
     addMsg('u', escapeHtml(text));
     setVoice('thinking','Parsing intent…');
     A.SFX.think();
@@ -184,6 +207,9 @@
       }, 600);
     }
   };
+
+  // connect to the Rust core (no-op in a plain browser)
+  initCore();
 
   // start the boot sequence
   window.BOOT?.run();
