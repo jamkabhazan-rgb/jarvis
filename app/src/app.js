@@ -146,11 +146,28 @@
     el.innerHTML=`<div class="av">J</div><div class="body"><div class="who">JARVIS</div><div class="txt">${html}</div></div>`;
     stream.appendChild(el); scrollBottom();
   }
+  // compact snapshot of panel state so read-tools (task_list, vault_search,
+  // finance_summary) can answer from real data
+  function gatherState(){
+    try{
+      const t = STORE.load('tasks', null);
+      const f = STORE.load('finance', null);
+      const v = STORE.load('vault', null);
+      return {
+        tasks: t ? { activeBoard:t.activeBoard, boards:(t.boards||[]).map(b=>({ id:b.id, name:b.name,
+          tasks:(b.tasks||[]).map(x=>({ text:x.text, col:x.col, pri:x.pri, due:x.due })) })) } : null,
+        finance: f ? { accounts:(f.accounts||[]).map(a=>({ name:a.name, balance:a.balance })),
+          cats:(f.cats||[]).map(c=>({ name:c.name, budget:c.budget, spent:c.spent })) } : null,
+        vault: v ? (v.notes||[]).map(n=>({ title:n.title, tags:n.tags })) : null
+      };
+    }catch(e){ return null; }
+  }
+
   function handleUserCore(text){
     addMsg('u', escapeHtml(text));
     setVoice('thinking','Routing through core…');
     coreBubble=null; coreReply=''; coreTyping=typingEl();
-    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat' }).catch(err=>{
+    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat', state: gatherState() }).catch(err=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
       addMsg('j','Core error: '+escapeHtml(String(err)));
       setVoice(live?'listening':'idle');

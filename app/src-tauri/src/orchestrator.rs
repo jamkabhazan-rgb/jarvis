@@ -9,14 +9,14 @@ Be concise and proactive — prefer doing over asking. You can manage the user's
 expenses and research via tools; call them when appropriate, then confirm in one short line. \
 Keep everything local and private; never claim to have done something you cannot actually do.";
 
-pub async fn handle_turn(app: AppHandle, text: String, _mode: String) {
-    if let Err(e) = run(&app, text).await {
+pub async fn handle_turn(app: AppHandle, text: String, _mode: String, state: Value) {
+    if let Err(e) = run(&app, text, &state).await {
         let _ = app.emit("chat_token", format!("⚠ {}", e));
     }
     let _ = app.emit("chat_done", ());
 }
 
-async fn run(app: &AppHandle, text: String) -> Result<(), String> {
+async fn run(app: &AppHandle, text: String, state: &Value) -> Result<(), String> {
     let mut messages: Vec<Value> = vec![
         json!({ "role": "system", "content": SYSTEM_PROMPT }),
         json!({ "role": "user", "content": text }),
@@ -36,10 +36,12 @@ async fn run(app: &AppHandle, text: String) -> Result<(), String> {
                     .and_then(|s| serde_json::from_str(s).ok())
                     .unwrap_or_else(|| json!({}));
 
-                // Tell the UI to apply the change to the right panel.
-                let _ = app.emit("tool_call", json!({ "name": name, "args": args }));
+                // Mutating tools: tell the UI to apply the change.
+                if crate::tools::is_mutating(&name) {
+                    let _ = app.emit("tool_call", json!({ "name": name, "args": args }));
+                }
 
-                let result = crate::tools::execute(&name, &args);
+                let result = crate::tools::execute(&name, &args, state);
                 messages.push(json!({
                     "role": "tool",
                     "tool_call_id": tc["id"],
@@ -47,7 +49,7 @@ async fn run(app: &AppHandle, text: String) -> Result<(), String> {
                 }));
             }
 
-            // Round 2: stream the spoken confirmation.
+            // Round 2: stream the spoken confirmation / answer.
             return crate::openai::chat::stream_chat(app, Value::Array(messages)).await;
         }
     }

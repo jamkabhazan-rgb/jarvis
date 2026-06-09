@@ -327,11 +327,55 @@
   if(SERVICES.find(s=>s.name==='Gmail')?.linked) setMailConnected(true);
   loadSettings();
 
-  // tool-call handler (core → panel): create a task
+  // apply any goal overrides set previously via the goal_set tool
+  (function(){
+    const m = STORE.load('goals', null); if(!m) return;
+    $$('#view-goals .goal').forEach(g=>{
+      const t=(g.querySelector('.g-title')?.textContent||'').trim();
+      if(t in m){ g.dataset.pct=m[t]; const lbl=g.querySelector('.g-pct'); if(lbl) lbl.textContent=m[t]+'%'; }
+    });
+  })();
+
+  // tool-call handlers (core → panel)
   window.JTOOLS = window.JTOOLS || {};
+  const COLS = ['backlog','today','progress','done'];
+
   window.JTOOLS.task_add = (a)=>{
-    const col = ['backlog','today','progress','done'].includes(a.column) ? a.column : 'today';
+    const col = COLS.includes(a.column) ? a.column : 'today';
     board().tasks.push({ id:++uid, col, text:a.title||'Untitled task', pri:'med', tag:'', due:'' });
     saveTasks(); renderBoards(); renderKanban();
+  };
+  window.JTOOLS.task_move = (a)=>{
+    const col = COLS.includes(a.column) ? a.column : 'today';
+    const q = String(a.title||'').toLowerCase();
+    let found=null;
+    for(const b of BOARDS){ const t=b.tasks.find(x=>x.text.toLowerCase().includes(q)); if(t){ found=t; break; } }
+    if(found){ found.col=col; saveTasks(); renderBoards(); renderKanban(); }
+  };
+  window.JTOOLS.board_add = (a)=>{
+    const id='b'+(++bid); BOARDS.push({ id, name:a.name||'New board', tasks:[] });
+    activeBoard=id; saveTasks(); renderBoards(); renderKanban();
+  };
+  window.JTOOLS.goal_set = (a)=>{
+    const q=String(a.title||'').toLowerCase();
+    const pct=Math.max(0,Math.min(100,Math.round(Number(a.percent)||0)));
+    const g=$$('#view-goals .goal').find(el=>(el.querySelector('.g-title')?.textContent||'').toLowerCase().includes(q));
+    if(g){
+      g.dataset.pct=pct;
+      const lbl=g.querySelector('.g-pct'); if(lbl) lbl.textContent=pct+'%';
+      const f=g.querySelector('.bar-fill'); if(f) f.style.width=pct+'%';
+      const title=(g.querySelector('.g-title')?.textContent||'').trim();
+      const m=STORE.load('goals',{})||{}; m[title]=pct; STORE.save('goals',m);
+    }
+  };
+  window.JTOOLS.habit_log = (a)=>{
+    const q=String(a.habit||'').toLowerCase(); const done=a.done!==false;
+    const card=$$('#view-tracker .card').find(c=>(c.querySelector('.c-title')?.textContent||'').toLowerCase().includes(q));
+    if(card){
+      card.classList.toggle('done',done);
+      const tag=card.querySelector('.tag'); if(tag){ tag.textContent=done?'DONE':'PENDING'; tag.classList.toggle('go',done); }
+      const title=(card.querySelector('.c-title')?.textContent||'').trim();
+      const m=STORE.load('tracker',{})||{}; m[title]=done; STORE.save('tracker',m);
+    }
   };
 })();

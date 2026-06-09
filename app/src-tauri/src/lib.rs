@@ -21,8 +21,13 @@ fn ping() -> String {
 /// Kick off a dialog turn. The reply is streamed back via the
 /// `chat_token` / `chat_done` events (see bridge.js).
 #[tauri::command]
-async fn chat_send(app: AppHandle, text: String, mode: String) -> Result<(), String> {
-    orchestrator::handle_turn(app, text, mode).await;
+async fn chat_send(
+    app: AppHandle,
+    text: String,
+    mode: String,
+    state: Option<serde_json::Value>,
+) -> Result<(), String> {
+    orchestrator::handle_turn(app, text, mode, state.unwrap_or(serde_json::Value::Null)).await;
     Ok(())
 }
 
