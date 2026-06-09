@@ -337,59 +337,20 @@
           <div class="vault-top">
             <div class="vsearch">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="text" placeholder="Search notes by meaning — semantic + full-text…">
+              <input type="text" id="vault-search" placeholder="Search notes — full-text + tags…">
             </div>
             <div class="vault-stats">
-              <div class="vs"><b>248</b> NOTES</div>
-              <div class="vs"><b>1,204</b> LINKS</div>
+              <div class="vs"><b id="vault-count">0</b> NOTES</div>
+              <div class="vs"><b id="vault-links">0</b> LINKS</div>
             </div>
+            <button class="ag-new" id="vault-new">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              New note
+            </button>
           </div>
-          <div class="tagrow">
-            <span class="vtag on">#all</span>
-            <span class="vtag">#engineering</span>
-            <span class="vtag">#ideas</span>
-            <span class="vtag">#meetings</span>
-            <span class="vtag">#research</span>
-            <span class="vtag">#personal</span>
-          </div>
-          <div class="vault-grid">
-            <div class="note">
-              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Arc reactor — design log</div>
-              <div class="n-ex">Palladium core degrades under sustained load. Exploring vibranium-free synthesis path; see linked thermal model and the [[Casing dielectrics]] note for the leakage term.</div>
-              <div class="n-tags"><span>engineering</span><span>physics</span></div>
-              <div class="n-foot"><span class="n-links">⌘ 8 links</span><span>EDITED 2h AGO</span></div>
-            </div>
-            <div class="note">
-              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Assistant architecture</div>
-              <div class="n-ex">Local-first pipeline: STT → LLM(tools) → TTS. Turn-taking window 1.2–1.5s, barge-in on speech. Each skill is a function-calling module — links to [[Tool router]].</div>
-              <div class="n-tags"><span>engineering</span><span>ideas</span></div>
-              <div class="n-foot"><span class="n-links">⌘ 14 links</span><span>EDITED 1d AGO</span></div>
-            </div>
-            <div class="note">
-              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>SI board — Q3 priorities</div>
-              <div class="n-ex">Clean-energy licensing, defense divestment timeline, and the Expo keynote. Pepper to circulate the deck Monday; action items mirrored to the [[Tasks]] board.</div>
-              <div class="n-tags"><span>meetings</span></div>
-              <div class="n-foot"><span class="n-links">⌘ 5 links</span><span>EDITED 3d AGO</span></div>
-            </div>
-            <div class="note">
-              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Reading — on-device LLMs</div>
-              <div class="n-ex">Notes pulled from 8 sources by the research skill. Quantized models within 4% of full precision; sanitize at the tokenizer. Synced from [[Research queue]].</div>
-              <div class="n-tags"><span>research</span><span>ideas</span></div>
-              <div class="n-foot"><span class="n-links">⌘ 6 links</span><span>EDITED 4d AGO</span></div>
-            </div>
-            <div class="note">
-              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Morning routine</div>
-              <div class="n-ex">Daily review with Jarvis at 07:30 — habits, calendar, top three. Linked to the tracker; mood + energy logged each evening.</div>
-              <div class="n-tags"><span>personal</span></div>
-              <div class="n-foot"><span class="n-links">⌘ 3 links</span><span>EDITED 5d AGO</span></div>
-            </div>
-            <div class="note">
-              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Materials — Ti-Au alloy</div>
-              <div class="n-ex">Fatigue life ~2× pure titanium at 79:21 ratio, +12% mass. Candidate for wearable structures. See [[Arc reactor — design log]].</div>
-              <div class="n-tags"><span>engineering</span><span>research</span></div>
-              <div class="n-foot"><span class="n-links">⌘ 9 links</span><span>EDITED 1w AGO</span></div>
-            </div>
-          </div>
+          <div class="tagrow" id="vault-tags"></div>
+          <div class="vault-grid" id="vault-grid"></div>
+          <div class="vault-empty" id="vault-empty" hidden>No notes match.</div>
         </div>
 
         <!-- CONNECTORS -->
@@ -530,5 +491,6 @@
 <script src="panels.js"></script>
 <script src="finance.js"></script>
 <script src="agents.js"></script>
+<script src="vault.js"></script>
 </body>
 </html>

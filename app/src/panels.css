@@ -225,3 +225,15 @@
 .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#021018;border:none;font-weight:600;box-shadow:0 0 18px rgba(0,212,255,.3)}
 .btn.ghost{color:var(--text-dim);background:rgba(0,0,0,.25)}
 .btn.ghost:hover{color:var(--text)}
+
+/* ---------- VAULT · editor + wikilinks + empty state ---------- */
+.vault-top #vault-new{flex:0 0 auto;margin-left:6px}
+.note{cursor:pointer}
+.n-ex .wl{color:var(--accent);background:rgba(0,212,255,.10);border-radius:4px;padding:0 4px;white-space:nowrap}
+.vault-empty{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);padding:30px 4px;text-align:center}
+.vault-editor{border:1px solid var(--glass-border-hi);border-radius:14px;background:rgba(0,0,0,.32);padding:16px;margin-bottom:16px;display:flex;flex-direction:column;gap:12px}
+.vault-editor .ve-title,.vault-editor .ve-tags{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--glass-border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:var(--font);font-size:14px;outline:none;transition:border-color .2s}
+.vault-editor .ve-title{font-size:16px;font-weight:600}
+.vault-editor .ve-body{width:100%;min-height:160px;resize:vertical;background:rgba(0,0,0,.4);border:1px solid var(--glass-border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6;outline:none;transition:border-color .2s}
+.vault-editor input:focus,.vault-editor textarea:focus{border-color:var(--glass-border-hi)}
+.vault-editor .ve-foot{display:flex;align-items:center;gap:10px}
