@@ -6,8 +6,7 @@
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",
-    "build": "tauri build",
-    "android": "tauri android dev"
+    "build": "tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2"

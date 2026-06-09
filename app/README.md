@@ -29,13 +29,16 @@ app/
 
 ## Run
 
+**Targets: macOS + Windows.** (Linux is out of scope for now.)
+
 ```bash
-# prerequisites: Rust, Node, Tauri CLI, and platform webview deps
+# prerequisites: Rust, Node, Tauri CLI
+#   macOS:   Xcode command-line tools
+#   Windows: Microsoft C++ Build Tools + WebView2 (preinstalled on Win 11)
 cd app
 npm install
 npm run dev          # tauri dev (desktop)
-npm run build        # .dmg / .msi / .AppImage
-npm run android      # tauri android dev
+npm run build        # macOS: .app/.dmg   ·   Windows: .msi/.exe (NSIS)
 ```
 
 The frontend is plain HTML/CSS/JS served statically (no bundler). Because
@@ -51,12 +54,8 @@ the Rust core; a grep of `src/` must never find it or an `api.openai.com` call.
 Once a key is set, the chat tab streams real `gpt-4o-mini` replies through the
 core (`chat_send` → `chat_token`/`chat_done` events).
 
-### Linux build note
-
-The `keyring` crate uses the Secret Service on Linux, so building/running
-there needs `libsecret` dev headers (e.g. `sudo apt install libsecret-1-dev`)
-plus a running keyring daemon (GNOME Keyring / KWallet). macOS and Windows use
-the native keychain — no extra deps.
+The key is stored in the native keychain — macOS Keychain and Windows
+Credential Manager — so no extra system packages are needed on either target.
 
 ### Icons
 
@@ -74,7 +73,7 @@ the native keychain — no extra deps.
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |
 | 6 | **Panels** | Research, mail (connect-gate + drafts-only), finance (CoinKeeper logic), tracker, connectors. | **in progress** — finance/tracker/connectors persisted; research queue interactive + persisted; mail gate persists. Real web-search/Gmail wiring later |
 | 7 | **Agents** | Sub-agent builder + scoped run-chat through the orchestrator. | planned |
-| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + macOS/Windows/Android builds + auto-update. | planned |
+| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | planned |
 
 ### Sprint 1 — what's in this scaffold
 
