@@ -206,7 +206,7 @@ fn finance_summary(state: &Value) -> String {
     let accounts = state["finance"]["accounts"].as_array();
     let cats = state["finance"]["cats"].as_array();
     let total: f64 = accounts
-        .map(|a| a.iter().filter_map(|x| x["balance"].as_f64()).sum())
+        .map(|a| a.iter().filter_map(|x| x["balance"].as_f64()).sum::<f64>())
         .unwrap_or(0.0);
     let (budget, spent): (f64, f64) = cats
         .map(|c| {

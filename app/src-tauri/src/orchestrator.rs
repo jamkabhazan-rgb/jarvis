@@ -67,7 +67,7 @@ fn filtered_defs(allow: &Option<Vec<String>>) -> Value {
             let arr = defs.as_array().cloned().unwrap_or_default();
             let kept: Vec<Value> = arr
                 .into_iter()
-                .filter(|d| d["function"]["name"].as_str().map(|n| list.iter().any(|a| a == n)).unwrap_or(false))
+                .filter(|d| d["function"]["name"].as_str().map(|n| list.iter().any(|a| a.as_str() == n)).unwrap_or(false))
                 .collect();
             Value::Array(kept)
         }
