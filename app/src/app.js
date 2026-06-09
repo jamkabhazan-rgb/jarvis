@@ -45,11 +45,26 @@
     live = !live;
     const btn=$('#mic-btn');
     btn.classList.toggle('live', live);
-    if(live){
-      A.SFX.listen(); setVoice('listening');
-      // pressing the mic puts the assistant in VOICE mode
-      $$('.mode-toggle button').forEach(x=>x.classList.toggle('active', x.textContent.trim()==='VOICE'));
+    $$('.mode-toggle button').forEach(x=>x.classList.toggle('active', x.textContent.trim()==='VOICE'));
+
+    // Real voice loop in the Tauri app: record -> transcribe -> chat -> speak
+    if(window.VOICE && window.VOICE.inTauri()){
+      window.VOICE.stopPlayback();          // barge-in: cut any TTS in progress
+      if(live){
+        setVoice('listening');
+        window.VOICE.startRec().catch(()=>{ live=false; btn.classList.remove('live'); setVoice('idle','Mic unavailable'); });
+      } else {
+        setVoice('thinking','Transcribing…');
+        window.VOICE.transcribe().then(text=>{
+          if(text && text.trim()){ voiceTurn=true; handleUserCore(text.trim()); }
+          else setVoice('idle');
+        }).catch(()=>setVoice('idle','Transcription failed'));
+      }
+      return;
     }
+
+    // browser fallback (no core): the original simulated behavior
+    if(live){ A.SFX.listen(); setVoice('listening'); }
     else { A.SFX.off(); setVoice('idle'); }
   }
 
@@ -97,15 +112,20 @@
   const DEFAULT_SAY = 'Understood. I’m running everything locally — give me a task, a question, or just talk.';
 
   /* ---------- core-backed chat (Tauri): stream via events ---------- */
-  let coreBubble=null, coreTyping=null;
+  let coreBubble=null, coreTyping=null, coreReply='', voiceTurn=false;
   async function initCore(){
     if(!(window.BRIDGE && window.BRIDGE.inTauri)) return;
     await BRIDGE.listen('chat_token', tok=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
       if(!coreBubble){ const e=addMsg('j',''); coreBubble=e.querySelector('.txt'); setVoice('speaking',''); }
-      coreBubble.textContent += tok; scrollBottom();
+      coreBubble.textContent += tok; coreReply += tok; scrollBottom();
     });
-    await BRIDGE.listen('chat_done', ()=>{ coreBubble=null; setVoice(live?'listening':'idle'); });
+    await BRIDGE.listen('chat_done', ()=>{
+      coreBubble=null;
+      const reply=coreReply; coreReply='';
+      if(voiceTurn){ voiceTurn=false; window.VOICE?.speak(reply); }
+      setVoice(live?'listening':'idle');
+    });
     await BRIDGE.listen('tool_call', tc=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
       renderToolCard(tc);
@@ -123,7 +143,7 @@
   function handleUserCore(text){
     addMsg('u', escapeHtml(text));
     setVoice('thinking','Routing through core…');
-    coreBubble=null; coreTyping=typingEl();
+    coreBubble=null; coreReply=''; coreTyping=typingEl();
     BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat' }).catch(err=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
       addMsg('j','Core error: '+escapeHtml(String(err)));
@@ -213,7 +233,7 @@
       // jarvis greets after reveal
       setTimeout(()=>{
         const e = addMsg('j','');
-        const say = 'Systems online. Voice pipeline initialized locally — Whisper, Llama and Piper all green. How can I help, Sir?';
+        const say = 'Systems online. Voice pipeline ready — speech, reasoning and synthesis all green. How can I help, Sir?';
         const txt=e.querySelector('.txt'); let i=0;
         setVoice('speaking',''); A.SFX.speak();
         const iv=setInterval(()=>{ txt.textContent=say.slice(0,++i); scrollBottom(); if(i>=say.length){clearInterval(iv); setVoice('idle');} },16);

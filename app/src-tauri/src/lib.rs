@@ -5,6 +5,7 @@
 //! chunks via Tauri events. See the build spec §03/§13/§14.
 #![allow(dead_code)] // scaffold: some items are filled in over later sprints
 
+use base64::Engine;
 use tauri::AppHandle;
 
 mod openai;
@@ -38,13 +39,31 @@ fn has_api_key() -> bool {
     openai::resolve_key().is_some()
 }
 
+/// Transcribe a recorded utterance (base64 audio + its MIME type) -> text.
+#[tauri::command]
+async fn transcribe(audio_b64: String, mime: String) -> Result<String, String> {
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(audio_b64.as_bytes())
+        .map_err(|e| e.to_string())?;
+    openai::stt::transcribe(bytes, &mime).await
+}
+
+/// Synthesize speech for `text` -> base64 mp3 the frontend plays.
+#[tauri::command]
+async fn speak(text: String) -> Result<String, String> {
+    let bytes = openai::tts::speak(&text, "alloy").await?;
+    Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
+}
+
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             ping,
             chat_send,
             set_api_key,
-            has_api_key
+            has_api_key,
+            transcribe,
+            speak
         ])
         .run(tauri::generate_context!())
         .expect("error while running J.A.R.V.I.S.");
