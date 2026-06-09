@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S.</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="panels.css">
+<link rel="stylesheet" href="finance.css">
+<link rel="stylesheet" href="agents.css">
+</head>
+<body>
+
+<div class="backdrop"></div>
+
+<!-- ============ BOOT OVERLAY ============ -->
+<div id="boot">
+  <div id="kernel"></div>
+
+  <div id="logo-stage">
+    <div class="logo" id="logo-glitch" data-text="J.A.R.V.I.S.">J.A.R.V.I.S.
+      <span class="logo-sub">JUST A RATHER VERY INTELLIGENT SYSTEM</span>
+    </div>
+  </div>
+
+  <div id="welcome-stage">
+    <div class="welcome"><span id="welcome-type"></span><span class="cursor">_</span></div>
+  </div>
+
+  <div id="orb-stage">
+    <canvas id="boot-orb"></canvas>
+    <div class="orb-stage-label" id="orb-stage-label"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="booting" aria-hidden="false">
+
+  <!-- topbar -->
+  <header id="topbar" class="panel section">
+    <div class="brand">
+      <span class="dot"></span>
+      <span class="name">J.A.R.V.I.S.</span>
+      <span class="ver">v2.0 · LOCAL</span>
+    </div>
+    <nav class="topnav">
+      <div class="tab active" data-tab="chat" data-title="Conversation" data-meta="LOCAL LLM · LLAMA 3.x" title="Chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.7L3 21l1.4-4.2A8.4 8.4 0 1 1 21 11.5z"/></svg>
+        <span class="tlabel">Chat</span>
+      </div>
+      <div class="tab" data-tab="tasks" data-title="Tasks" data-meta="3 ACTIVE · 1 DUE TODAY" title="Tasks">
+        <span class="badge">3</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+        <span class="tlabel">Tasks</span>
+      </div>
+      <div class="tab" data-tab="research" data-title="Research" data-meta="5 SOURCES QUEUED" title="Research">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="tlabel">Research</span>
+      </div>
+      <div class="tab" data-tab="goals" data-title="Goals" data-meta="NORTH STAR · 41%" title="Goals">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+        <span class="tlabel">Goals</span>
+      </div>
+      <div class="tab" data-tab="mail" data-title="Mail" data-meta="3 PRIORITY · 1 DRAFT" title="Mail">
+        <span class="badge">3</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <span class="tlabel">Mail</span>
+      </div>
+      <div class="tab" data-tab="finance" data-title="Finance" data-meta="JUNE · NET +$4,210" title="Finance">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-5 4 3 7-8"/><path d="M16 4h5v5"/></svg>
+        <span class="tlabel">Finance</span>
+      </div>
+      <div class="tab" data-tab="tracker" data-title="Tracker" data-meta="DAY 12 · STREAK 12" title="Tracker">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="tlabel">Tracker</span>
+      </div>
+      <div class="tab" data-tab="vault" data-title="Knowledge" data-meta="VAULT · 248 NOTES" title="Knowledge">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2z"/><path d="M9 3v18"/></svg>
+        <span class="tlabel">Knowledge</span>
+      </div>
+      <div class="tab" data-tab="connectors" data-title="Connectors" data-meta="6 LINKED · 6 AVAILABLE" title="Connectors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l-2 2a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0"/><path d="M15 13l2-2a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0"/><path d="M9 15l6-6"/></svg>
+        <span class="tlabel">Connectors</span>
+      </div>
+      <div class="tab" data-tab="agents" data-title="Agents" data-meta="3 AGENTS · LOCAL" title="Agents">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z"/><circle cx="12" cy="12" r="3"/><path d="M12 9V7M12 17v-2M15 12h2M7 12h2"/></svg>
+        <span class="tlabel">Agents</span>
+      </div>
+    </nav>
+    <div class="topright">
+      <div class="mode-toggle">
+        <button class="active">VOICE</button>
+        <button>CHAT</button>
+      </div>
+      <div class="indicators">
+        <button class="icon-btn" id="open-settings" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1A2 2 0 1 1 4.5 17l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.7 7.4l-.1-.1A2 2 0 1 1 7.4 4.5l.1.1A1.6 1.6 0 0 0 10 3.6V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1A2 2 0 1 1 19.5 7l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="main">
+    <!-- orb column -->
+    <aside id="orbcol" class="panel section">
+      <div class="orb-wrap">
+        <div class="orb-ring r1"></div>
+        <div class="orb-ring r2"></div>
+        <canvas id="orb"></canvas>
+      </div>
+      <div class="voice-state">
+        <div class="vs-label" id="vs-label">Standby</div>
+        <div class="vs-sub" id="vs-sub">Initializing…</div>
+      </div>
+      <div class="wave" id="wave">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </div>
+      <button class="mic-btn" id="mic-btn" title="Toggle voice">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <div class="mic-hint">CLICK OR SAY “HEY JARVIS”</div>
+    </aside>
+
+    <!-- panel column -->
+    <section id="panelcol" class="panel section">
+      <div class="panel-body">
+        <div class="panel-head">
+          <h2 id="panel-title">Conversation</h2>
+          <span class="ph-meta" id="panel-meta">LOCAL LLM · LLAMA 3.x</span>
+        </div>
+
+        <!-- CHAT -->
+        <div class="view" id="view-chat">
+          <div id="chat-stream"></div>
+        </div>
+        <div class="composer" id="composer">
+          <span class="prompt">›</span>
+          <input id="composer-input" type="text" placeholder="Type a command, or hold the mic to speak…" autocomplete="off">
+          <button class="send" id="composer-send">SEND</button>
+        </div>
+
+        <!-- TASKS · kanban -->
+        <div class="view" id="view-tasks" hidden>
+          <div class="board-bar" id="board-bar"></div>
+          <div class="kanban" id="kanban"></div>
+        </div>
+
+        <!-- RESEARCH -->
+        <div class="view" id="view-research" hidden>
+          <div class="rsrch-bar">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Research anything — I’ll search the web, read, and summarize…">
+            <span class="rb-go">RESEARCH</span>
+          </div>
+
+          <div class="hero">
+            <div class="thumb"><span>SOURCE PREVIEW</span></div>
+            <div class="h-body">
+              <div class="h-kicker">Latest brief · summarized 2 min ago</div>
+              <h3>Solid-state arc reactor efficiency at sub-zero load</h3>
+              <p class="h-sum">Across five recent papers, sustained output above 92% efficiency holds down to −40°C when the palladium lattice is pre-conditioned. The main loss term is dielectric leakage, not thermal — which suggests the casing, not the core, is the limiting factor for field deployment.</p>
+              <div class="h-foot">
+                <span class="src-chip"><span class="sdot"></span>5 sources</span>
+                <span class="src-chip">arXiv · IEEE · 3 more</span>
+                <span class="src-chip">3 min read</span>
+                <span class="src-chip">PHYSICS</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-head">Reading queue</div>
+          <div class="rcard">
+            <div class="rthumb"></div>
+            <div class="r-body">
+              <div class="r-title">Adversarial robustness in on-device language models</div>
+              <p class="r-sum">Quantized local models stay within 4% of full-precision accuracy under common prompt-injection attacks; the largest gains come from input sanitization at the tokenizer, not from model size.</p>
+              <div class="r-meta"><span>8 SOURCES</span><span>6 MIN READ</span><span>AI · SECURITY</span><span class="r-status"><span class="dot"></span>SUMMARY READY</span></div>
+            </div>
+          </div>
+          <div class="rcard">
+            <div class="rthumb"></div>
+            <div class="r-body">
+              <div class="r-title">Titanium-gold alloy fatigue thresholds under cyclic load</div>
+              <p class="r-sum">Fatigue life roughly doubles versus pure titanium at the cost of ~12% added mass; the alloy’s sweet spot for wearable structures sits near a 79:21 ratio.</p>
+              <div class="r-meta"><span>3 SOURCES</span><span>4 MIN READ</span><span>MATERIALS</span><span class="r-status queued"><span class="dot"></span>SUMMARIZING…</span></div>
+            </div>
+          </div>
+          <div class="rcard">
+            <div class="rthumb"></div>
+            <div class="r-body">
+              <div class="r-title">Edge inference latency: streaming vs. batched decoding</div>
+              <p class="r-sum">Sentence-level streaming cuts perceived response time by 60% even when total tokens are identical — confirming the spec’s “stream everything” latency strategy.</p>
+              <div class="r-meta"><span>6 SOURCES</span><span>5 MIN READ</span><span>SYSTEMS</span><span class="r-status"><span class="dot"></span>SUMMARY READY</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GOALS -->
+        <div class="view" id="view-goals" hidden>
+          <div class="goals-hero">
+            <div class="ring" style="--p:41"><span class="rv">41<i>%</i></span></div>
+            <div class="gh-body">
+              <div class="gh-kicker">North star · life goal</div>
+              <h3>An arc reactor in every home</h3>
+              <p class="gh-sum">Clean, decentralized energy as the default. Every horizon below rolls up to this — Jarvis tracks the metrics and nudges when something falls behind.</p>
+              <div class="gh-tags">
+                <span class="src-chip"><span class="sdot"></span>8 active goals</span>
+                <span class="src-chip">on track</span>
+                <span class="src-chip">est. 2031</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-head">This year</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="68">
+              <div class="g-top"><span class="g-title">Ship the Mark VIII suit</span><span class="g-pct">68%</span></div>
+              <div class="g-sub">7 of 11 subsystems flight-qualified</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="30">
+              <div class="g-top"><span class="g-title">Open-source the energy patent</span><span class="g-pct">30%</span></div>
+              <div class="g-sub">Legal review · 2 of 6 filings cleared</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="col-head">This quarter</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="85">
+              <div class="g-top"><span class="g-title">Fully-local voice pipeline</span><span class="g-pct">85%</span></div>
+              <div class="g-sub">STT + LLM + TTS on-device · tuning latency</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="55">
+              <div class="g-top"><span class="g-title">Stark Expo keynote ready</span><span class="g-pct">55%</span></div>
+              <div class="g-sub">Narrative locked · demo + deck in progress</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="col-head">This month</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="72">
+              <div class="g-top"><span class="g-title">Inference latency &lt; 300 ms</span><span class="g-pct">72%</span></div>
+              <div class="g-sub">Now 384 ms → target 300 ms</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="82">
+              <div class="g-top"><span class="g-title">Vault: 300 notes indexed</span><span class="g-pct">82%</span></div>
+              <div class="g-sub">248 of 300 notes embedded</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="col-head">This week</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="71">
+              <div class="g-top"><span class="g-title">Deep-work, 5 of 7 days</span><span class="g-pct">71%</span></div>
+              <div class="g-sub">5 days hit · streak 12</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="50">
+              <div class="g-top"><span class="g-title">Clear 12 backlog tasks</span><span class="g-pct">50%</span></div>
+              <div class="g-sub">6 of 12 closed</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIL -->
+        <div class="view" id="view-mail" hidden>
+          <div class="gconnect" id="mail-gate">
+            <div class="gc-ico">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </div>
+            <h3>Connect your inbox</h3>
+            <p>Jarvis reads, triages and drafts replies — but it needs access first. Authorize with Google to pull in Gmail and Calendar. Tokens stay in your system keychain; nothing is sent to the cloud without your say-so.</p>
+            <button class="gbtn" id="mail-connect">
+              <span class="g-mark">G</span>
+              Connect Google account
+            </button>
+            <div class="gc-note">Read-only by default · revoke anytime in Connectors</div>
+          </div>
+
+          <div id="mail-inbox" hidden>
+            <div class="col-head">Priority inbox · triaged</div>
+            <div class="cards">
+              <div class="card"><div class="c-main"><div class="c-title">Pepper Potts — Board deck for Monday</div><div class="c-sub">DRAFT PREPARED · AWAITING YOUR OK</div></div><span class="tag hi">REPLY</span></div>
+              <div class="card"><div class="c-main"><div class="c-title">Col. Rhodes — Joint test window</div><div class="c-sub">SUGGESTED: THU 09:00</div></div><span class="tag">SCHEDULE</span></div>
+              <div class="card"><div class="c-main"><div class="c-title">Stark Industries R&amp;D — Weekly digest</div><div class="c-sub">SUMMARIZED · 4 HIGHLIGHTS</div></div><span class="tag">FYI</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINANCE -->
+        <div class="view" id="view-finance" hidden>
+          <div class="fin-head">
+            <div class="fin-total">
+              <div class="ft-label">Total balance</div>
+              <div class="ft-val" id="fin-total">$0</div>
+            </div>
+            <div class="fin-accounts" id="fin-accounts"></div>
+            <div class="fin-actions">
+              <button class="fin-btn exp" id="fin-add-exp">+ Expense</button>
+              <button class="fin-btn inc" id="fin-add-inc">+ Income</button>
+            </div>
+          </div>
+          <div class="fin-entry" id="fin-entry" hidden></div>
+          <div class="fin-summary" id="fin-summary"></div>
+          <div class="col-head">Budgets · this month</div>
+          <div class="cat-grid" id="cat-grid"></div>
+          <div class="col-head">Recent transactions</div>
+          <div class="txn-list" id="txn-list"></div>
+        </div>
+
+        <!-- TRACKER -->
+        <div class="view" id="view-tracker" hidden>
+          <div class="stat-row">
+            <div class="stat"><div class="s-val">12</div><div class="s-lbl">Day streak</div></div>
+            <div class="stat"><div class="s-val">6h 41m</div><div class="s-lbl">Deep work</div></div>
+            <div class="stat"><div class="s-val">7.2h</div><div class="s-lbl">Sleep</div></div>
+          </div>
+          <div class="col-head">Today’s habits</div>
+          <div class="cards">
+            <div class="card done"><div class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="c-main"><div class="c-title">Morning review w/ Jarvis</div></div><span class="tag go">DONE</span></div>
+            <div class="card done"><div class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="c-main"><div class="c-title">Workshop — 2h focus block</div></div><span class="tag go">DONE</span></div>
+            <div class="card"><div class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="c-main"><div class="c-title">Evening journal entry</div></div><span class="tag">PENDING</span></div>
+          </div>
+        </div>
+
+        <!-- KNOWLEDGE -->
+        <div class="view" id="view-vault" hidden>
+          <div class="vault-top">
+            <div class="vsearch">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" placeholder="Search notes by meaning — semantic + full-text…">
+            </div>
+            <div class="vault-stats">
+              <div class="vs"><b>248</b> NOTES</div>
+              <div class="vs"><b>1,204</b> LINKS</div>
+            </div>
+          </div>
+          <div class="tagrow">
+            <span class="vtag on">#all</span>
+            <span class="vtag">#engineering</span>
+            <span class="vtag">#ideas</span>
+            <span class="vtag">#meetings</span>
+            <span class="vtag">#research</span>
+            <span class="vtag">#personal</span>
+          </div>
+          <div class="vault-grid">
+            <div class="note">
+              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Arc reactor — design log</div>
+              <div class="n-ex">Palladium core degrades under sustained load. Exploring vibranium-free synthesis path; see linked thermal model and the [[Casing dielectrics]] note for the leakage term.</div>
+              <div class="n-tags"><span>engineering</span><span>physics</span></div>
+              <div class="n-foot"><span class="n-links">⌘ 8 links</span><span>EDITED 2h AGO</span></div>
+            </div>
+            <div class="note">
+              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Assistant architecture</div>
+              <div class="n-ex">Local-first pipeline: STT → LLM(tools) → TTS. Turn-taking window 1.2–1.5s, barge-in on speech. Each skill is a function-calling module — links to [[Tool router]].</div>
+              <div class="n-tags"><span>engineering</span><span>ideas</span></div>
+              <div class="n-foot"><span class="n-links">⌘ 14 links</span><span>EDITED 1d AGO</span></div>
+            </div>
+            <div class="note">
+              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>SI board — Q3 priorities</div>
+              <div class="n-ex">Clean-energy licensing, defense divestment timeline, and the Expo keynote. Pepper to circulate the deck Monday; action items mirrored to the [[Tasks]] board.</div>
+              <div class="n-tags"><span>meetings</span></div>
+              <div class="n-foot"><span class="n-links">⌘ 5 links</span><span>EDITED 3d AGO</span></div>
+            </div>
+            <div class="note">
+              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Reading — on-device LLMs</div>
+              <div class="n-ex">Notes pulled from 8 sources by the research skill. Quantized models within 4% of full precision; sanitize at the tokenizer. Synced from [[Research queue]].</div>
+              <div class="n-tags"><span>research</span><span>ideas</span></div>
+              <div class="n-foot"><span class="n-links">⌘ 6 links</span><span>EDITED 4d AGO</span></div>
+            </div>
+            <div class="note">
+              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Morning routine</div>
+              <div class="n-ex">Daily review with Jarvis at 07:30 — habits, calendar, top three. Linked to the tracker; mood + energy logged each evening.</div>
+              <div class="n-tags"><span>personal</span></div>
+              <div class="n-foot"><span class="n-links">⌘ 3 links</span><span>EDITED 5d AGO</span></div>
+            </div>
+            <div class="note">
+              <div class="n-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M14 3l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>Materials — Ti-Au alloy</div>
+              <div class="n-ex">Fatigue life ~2× pure titanium at 79:21 ratio, +12% mass. Candidate for wearable structures. See [[Arc reactor — design log]].</div>
+              <div class="n-tags"><span>engineering</span><span>research</span></div>
+              <div class="n-foot"><span class="n-links">⌘ 9 links</span><span>EDITED 1w AGO</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONNECTORS -->
+        <div class="view" id="view-connectors" hidden>
+          <p class="conn-intro">Connect your accounts so Jarvis can read context and act through its skills. Connectors run on <b>your</b> credentials — auth tokens live in the system keychain, and Jarvis only requests scopes you approve.</p>
+          <div class="conn-section">Connected</div>
+          <div class="conn-grid" id="conn-linked"></div>
+          <div class="conn-section">Available</div>
+          <div class="conn-grid" id="conn-available"></div>
+        </div>
+
+        <!-- AGENTS -->
+        <div class="view" id="view-agents" hidden>
+          <div class="ag-head">
+            <p class="ag-intro">Build focused sub-agents from Jarvis. Each gets its own role, prompt, tools and knowledge bases — then runs in its own task chat.</p>
+            <button class="ag-new" id="ag-new">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              New agent
+            </button>
+          </div>
+          <div class="ag-grid" id="ag-grid"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- FX overlays -->
+<div class="fx scan"></div>
+<div class="fx vignette"></div>
+<div class="fx flicker"></div>
+
+<!-- SETTINGS · full page -->
+<div class="settings-page" id="settings">
+  <div class="sp-bar">
+    <div class="sp-title">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1A2 2 0 1 1 4.5 17l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.7 7.4l-.1-.1A2 2 0 1 1 7.4 4.5l.1.1A1.6 1.6 0 0 0 10 3.6V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1A2 2 0 1 1 19.5 7l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.2z"/></svg>
+      <h2>Settings</h2>
+    </div>
+    <div class="sp-actions">
+      <span class="saved" id="set-saved">✓ SAVED LOCALLY</span>
+      <button class="btn ghost" id="settings-close">CLOSE</button>
+      <button class="btn primary" id="settings-save">SAVE CHANGES</button>
+    </div>
+  </div>
+
+  <div class="sp-scroll">
+    <div class="sp-inner">
+      <!-- profile -->
+      <section class="sp-card profile">
+        <div class="avatar" id="sp-avatar">TS</div>
+        <div class="pf-meta">
+          <div class="pf-name" id="pf-name">Sir Stark</div>
+          <div class="pf-mail" id="pf-mail">sir@starkindustries.com</div>
+        </div>
+        <div class="pf-chip"><span class="led"></span>LOCAL ACCOUNT · ENCRYPTED</div>
+      </section>
+
+      <!-- identity -->
+      <section class="sp-card">
+        <h3>Identity</h3>
+        <p class="sp-desc">Jarvis greets you by name and signs drafts as you.</p>
+        <div class="field">
+          <label>Name</label>
+          <div class="row">
+            <input id="set-first" type="text" placeholder="First name" value="Sir">
+            <input id="set-last" type="text" placeholder="Last name" value="Stark">
+          </div>
+        </div>
+      </section>
+
+      <!-- account -->
+      <section class="sp-card">
+        <h3>Account &amp; security</h3>
+        <p class="sp-desc">Used for connectors, drafts and account recovery. Credentials are stored in the system keychain — never in plaintext.</p>
+        <div class="field">
+          <label>Email</label>
+          <input id="set-email" type="email" placeholder="you@domain.com" value="sir@starkindustries.com">
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-sub">Change password</div>
+        <div class="field">
+          <label>Current password</label>
+          <input id="set-pass-cur" type="password" placeholder="••••••••">
+        </div>
+        <div class="field">
+          <div class="row">
+            <div style="flex:1">
+              <label>New password</label>
+              <input id="set-pass-new" type="password" placeholder="At least 8 characters">
+            </div>
+            <div style="flex:1">
+              <label>Confirm new</label>
+              <input id="set-pass-confirm" type="password" placeholder="Repeat new password">
+            </div>
+          </div>
+          <div class="pass-meter"><div class="pm-fill" id="pm-fill"></div></div>
+        </div>
+        <div class="field-foot">
+          <span class="field-msg" id="pass-msg"></span>
+          <button class="btn ghost" id="set-pass-update">UPDATE PASSWORD</button>
+        </div>
+      </section>
+
+      <!-- assistant -->
+      <section class="sp-card">
+        <h3>Assistant</h3>
+        <p class="sp-desc">Shapes how Jarvis talks and behaves across every conversation.</p>
+        <div class="field">
+          <label>Wake word</label>
+          <input id="set-wake" type="text" placeholder="Hey Jarvis" value="Hey Jarvis">
+        </div>
+        <div class="field">
+          <label>Core system prompt</label>
+          <textarea id="set-prompt">You are Jarvis, a calm, dry-witted personal assistant. Be concise and proactive. Prefer doing over asking. Address me as “sir” only occasionally. Keep everything local and private; never send data to the cloud without explicit confirmation. When you use a tool, say what you did in one line.</textarea>
+          <div class="hint">Prepended to every conversation. Tool instructions stay in their own definitions.</div>
+        </div>
+      </section>
+
+      <!-- privacy -->
+      <section class="sp-card">
+        <h3>Privacy</h3>
+        <p class="sp-desc">Local-first by default. Cloud features are opt-in and run on your own keys.</p>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Local-only mode</div><div class="tr-s">Audio and data never leave this device</div></div><div class="switch on" data-toggle="local"></div></div>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Cloud LLM fallback</div><div class="tr-s">Use a cloud model when local is unavailable</div></div><div class="switch" data-toggle="cloud"></div></div>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Telemetry</div><div class="tr-s">Anonymous usage analytics</div></div><div class="switch" data-toggle="telemetry"></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="audio.js"></script>
+<script src="orb.js"></script>
+<script src="boot.js"></script>
+<script src="bridge.js"></script>
+<script src="app.js"></script>
+<script src="panels.js"></script>
+<script src="finance.js"></script>
+<script src="agents.js"></script>
+</body>
+</html>

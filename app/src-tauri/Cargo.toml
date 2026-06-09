@@ -1,0 +1,31 @@
+[package]
+name = "jarvis"
+version = "0.1.0"
+description = "J.A.R.V.I.S. — local-first voice AI assistant"
+authors = ["Jarvis"]
+edition = "2021"
+rust-version = "1.77"
+
+# The library is what the mobile/desktop entry points share.
+[lib]
+name = "jarvis_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# --- enabled per sprint (kept out until used so the scaffold compiles clean) ---
+# reqwest        = { version = "0.12", features = ["json", "stream", "multipart"] }  # Sprint 2: OpenAI
+# tokio          = { version = "1",    features = ["full"] }                          # Sprint 2: async
+# keyring        = "3"                                                                # Sprint 2: key in OS keychain
+# sqlx           = { version = "0.8",  features = ["runtime-tokio", "sqlite"] }        # Sprint 4: data model
+# tauri-plugin-sql = { version = "2",  features = ["sqlite"] }                         # Sprint 4
+
+[features]
+# this feature is used to produce a slimmer binary for mobile in the future
+custom-protocol = ["tauri/custom-protocol"]
