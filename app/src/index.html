@@ -152,8 +152,8 @@
         <div class="view" id="view-research" hidden>
           <div class="rsrch-bar">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" placeholder="Research anything — I’ll search the web, read, and summarize…">
-            <span class="rb-go">RESEARCH</span>
+            <input type="text" id="rsrch-input" placeholder="Research anything — I’ll search the web, read, and summarize…">
+            <span class="rb-go" id="rsrch-go">RESEARCH</span>
           </div>
 
           <div class="hero">
@@ -172,30 +172,7 @@
           </div>
 
           <div class="col-head">Reading queue</div>
-          <div class="rcard">
-            <div class="rthumb"></div>
-            <div class="r-body">
-              <div class="r-title">Adversarial robustness in on-device language models</div>
-              <p class="r-sum">Quantized local models stay within 4% of full-precision accuracy under common prompt-injection attacks; the largest gains come from input sanitization at the tokenizer, not from model size.</p>
-              <div class="r-meta"><span>8 SOURCES</span><span>6 MIN READ</span><span>AI · SECURITY</span><span class="r-status"><span class="dot"></span>SUMMARY READY</span></div>
-            </div>
-          </div>
-          <div class="rcard">
-            <div class="rthumb"></div>
-            <div class="r-body">
-              <div class="r-title">Titanium-gold alloy fatigue thresholds under cyclic load</div>
-              <p class="r-sum">Fatigue life roughly doubles versus pure titanium at the cost of ~12% added mass; the alloy’s sweet spot for wearable structures sits near a 79:21 ratio.</p>
-              <div class="r-meta"><span>3 SOURCES</span><span>4 MIN READ</span><span>MATERIALS</span><span class="r-status queued"><span class="dot"></span>SUMMARIZING…</span></div>
-            </div>
-          </div>
-          <div class="rcard">
-            <div class="rthumb"></div>
-            <div class="r-body">
-              <div class="r-title">Edge inference latency: streaming vs. batched decoding</div>
-              <p class="r-sum">Sentence-level streaming cuts perceived response time by 60% even when total tokens are identical — confirming the spec’s “stream everything” latency strategy.</p>
-              <div class="r-meta"><span>6 SOURCES</span><span>5 MIN READ</span><span>SYSTEMS</span><span class="r-status"><span class="dot"></span>SUMMARY READY</span></div>
-            </div>
-          </div>
+          <div id="rq-list"></div>
         </div>
 
         <!-- GOALS -->
@@ -492,5 +469,6 @@
 <script src="finance.js"></script>
 <script src="agents.js"></script>
 <script src="vault.js"></script>
+<script src="research.js"></script>
 </body>
 </html>
