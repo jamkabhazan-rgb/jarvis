@@ -4,21 +4,36 @@
 use serde_json::{json, Value};
 use tauri::{AppHandle, Emitter};
 
-const SYSTEM_PROMPT: &str = "You are J.A.R.V.I.S., a calm, dry-witted personal assistant. \
-Be concise and proactive — prefer doing over asking. You can manage the user's tasks, notes, \
-expenses and research via tools; call them when appropriate, then confirm in one short line. \
-Keep everything local and private; never claim to have done something you cannot actually do.";
+const DEFAULT_PERSONA: &str = "You are J.A.R.V.I.S., a calm, dry-witted personal assistant. \
+Be concise and proactive — prefer doing over asking.";
 
-pub async fn handle_turn(app: AppHandle, text: String, _mode: String, state: Value) {
-    if let Err(e) = run(&app, text, &state).await {
+const TOOLS_NOTE: &str = "You can manage the user's tasks, boards, goals, habits, notes, \
+expenses and research via the provided tools; call them when appropriate, then confirm in one \
+short line. Keep everything local and private; never claim to have done something you cannot.";
+
+fn build_system(persona: &Value) -> String {
+    let base = persona["prompt"]
+        .as_str()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .unwrap_or(DEFAULT_PERSONA);
+    let mut sys = format!("{}\n\n{}", base, TOOLS_NOTE);
+    if let Some(name) = persona["name"].as_str().map(str::trim).filter(|s| !s.is_empty()) {
+        sys.push_str(&format!("\n\nThe user's name is {name}."));
+    }
+    sys
+}
+
+pub async fn handle_turn(app: AppHandle, text: String, _mode: String, state: Value, persona: Value) {
+    if let Err(e) = run(&app, text, &state, &persona).await {
         let _ = app.emit("chat_token", format!("⚠ {}", e));
     }
     let _ = app.emit("chat_done", ());
 }
 
-async fn run(app: &AppHandle, text: String, state: &Value) -> Result<(), String> {
+async fn run(app: &AppHandle, text: String, state: &Value, persona: &Value) -> Result<(), String> {
     let mut messages: Vec<Value> = vec![
-        json!({ "role": "system", "content": SYSTEM_PROMPT }),
+        json!({ "role": "system", "content": build_system(persona) }),
         json!({ "role": "user", "content": text }),
     ];
 

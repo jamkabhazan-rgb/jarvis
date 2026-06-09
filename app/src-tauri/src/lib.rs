@@ -26,8 +26,16 @@ async fn chat_send(
     text: String,
     mode: String,
     state: Option<serde_json::Value>,
+    persona: Option<serde_json::Value>,
 ) -> Result<(), String> {
-    orchestrator::handle_turn(app, text, mode, state.unwrap_or(serde_json::Value::Null)).await;
+    orchestrator::handle_turn(
+        app,
+        text,
+        mode,
+        state.unwrap_or(serde_json::Value::Null),
+        persona.unwrap_or(serde_json::Value::Null),
+    )
+    .await;
     Ok(())
 }
 

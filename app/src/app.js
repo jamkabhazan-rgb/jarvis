@@ -163,11 +163,19 @@
     }catch(e){ return null; }
   }
 
+  // persona (system prompt + name) from Settings → core
+  function gatherPersona(){
+    try{
+      const s = STORE.load('settings', {}) || {};
+      return { prompt:(s.prompt||'').trim(), name:[s.first,s.last].filter(Boolean).join(' ').trim() };
+    }catch(e){ return {}; }
+  }
+
   function handleUserCore(text){
     addMsg('u', escapeHtml(text));
     setVoice('thinking','Routing through core…');
     coreBubble=null; coreReply=''; coreTyping=typingEl();
-    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat', state: gatherState() }).catch(err=>{
+    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat', state: gatherState(), persona: gatherPersona() }).catch(err=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
       addMsg('j','Core error: '+escapeHtml(String(err)));
       setVoice(live?'listening':'idle');
