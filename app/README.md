@@ -67,8 +67,9 @@ prompts via WebView2.
 
 ### Icons
 
-`tauri build` needs icons in `src-tauri/icons/`. Generate them once with
-`npm run tauri icon path/to/logo.png`. `tauri dev` runs without them.
+`tauri build` needs icons in `src-tauri/icons/` — they are committed
+(generated orb logo: `.png`, `.ico`, `.icns`). To replace the logo, drop a
+square PNG and run `npm run tauri icon path/to/logo.png` to regenerate the set.
 
 ## Sprint roadmap (spec §15 — ship in this order)
 
@@ -81,7 +82,7 @@ prompts via WebView2.
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |
 | 6 | **Panels** | Research, mail (connect-gate + drafts-only), finance (CoinKeeper logic), tracker, connectors. | **in progress** — finance/tracker/connectors persisted; research queue interactive + persisted; mail gate persists. Real web-search/Gmail wiring later |
 | 7 | **Agents** | Sub-agent builder + scoped run-chat through the orchestrator. | planned |
-| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | planned |
+| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | **in progress** — app icons + bundle config ready (`.app`/`.dmg`, `.msi`/NSIS), metadata + mic Info.plist. Computer-control module + auto-update next |
 
 ### Sprint 1 — what's in this scaffold
 
