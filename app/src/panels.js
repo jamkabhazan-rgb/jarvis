@@ -153,6 +153,14 @@
     { name:'Zapier',          mono:'Z',  color:'#FF4F00', desc:'Automation · webhooks', linked:false },
     { name:'Dropbox',         mono:'D',  color:'#0061FE', desc:'Files · storage', linked:false },
   ];
+  // restore saved linked-state, then expose a saver
+  (function(){
+    const saved = STORE.load('connectors', null);
+    if(saved) SERVICES.forEach(s=>{ if(s.name in saved) s.linked = saved[s.name]; });
+  })();
+  function saveConnectors(){
+    const m = {}; SERVICES.forEach(s=> m[s.name]=s.linked); STORE.save('connectors', m);
+  }
 
   function connEl(s){
     const el = document.createElement('div');
@@ -165,7 +173,7 @@
       </div>
       <div class="c-btn">${s.linked?'MANAGE':'CONNECT'}</div>`;
     el.querySelector('.c-btn').addEventListener('click', ()=>{
-      s.linked = !s.linked; A.SFX[s.linked?'listen':'off'](); renderConnectors();
+      s.linked = !s.linked; saveConnectors(); A.SFX[s.linked?'listen':'off'](); renderConnectors();
     });
     return el;
   }
@@ -187,7 +195,7 @@
     gate.hidden = on; inbox.hidden = !on;
     const gmail = SERVICES.find(s=>s.name==='Gmail'); if(gmail) gmail.linked = on;
     const cal = SERVICES.find(s=>s.name==='Google Calendar'); if(cal) cal.linked = on;
-    renderConnectors();
+    saveConnectors(); renderConnectors();
   }
   $('#mail-connect')?.addEventListener('click', ()=>{
     const btn = $('#mail-connect');
@@ -210,6 +218,28 @@
     });
   }
   $('.tab[data-tab="goals"]')?.addEventListener('click', ()=> setTimeout(fillGoals, 60));
+
+  /* ===================== TRACKER · habits ===================== */
+  function initTracker(){
+    const cards = $$('#view-tracker .card');
+    if(!cards.length) return;
+    const saved = STORE.load('tracker', {}) || {};
+    const syncTag = (card, done)=>{
+      const tag = card.querySelector('.tag');
+      if(tag){ tag.textContent = done?'DONE':'PENDING'; tag.classList.toggle('go', done); }
+    };
+    cards.forEach(card=>{
+      const title = (card.querySelector('.c-title')?.textContent || '').trim();
+      if(title in saved){ card.classList.toggle('done', !!saved[title]); syncTag(card, !!saved[title]); }
+      card.querySelector('.check')?.addEventListener('click', ()=>{
+        // app.js already toggled `.done`; read the result, sync tag, persist
+        const done = card.classList.contains('done');
+        syncTag(card, done);
+        const map = STORE.load('tracker', {}) || {};
+        map[title] = done; STORE.save('tracker', map);
+      });
+    });
+  }
 
   /* ===================== SETTINGS · full page ===================== */
   const modal = $('#settings');
@@ -279,5 +309,8 @@
   renderBoards();
   renderKanban();
   renderConnectors();
+  initTracker();
+  // restore mail "connected" view if Gmail was linked
+  if(SERVICES.find(s=>s.name==='Gmail')?.linked) setMailConnected(true);
   loadSettings();
 })();
