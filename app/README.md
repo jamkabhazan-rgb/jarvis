@@ -45,9 +45,18 @@ Opened in a plain browser it falls back to "core unavailable" so the UI
 
 ### Key handling
 
-Set the OpenAI key via Settings (stored in the OS keychain) — or, for dev,
-export `OPENAI_API_KEY` before `npm run dev`. The key lives only in the Rust
-core; a grep of `src/` must never find it or an `api.openai.com` call.
+Set the OpenAI key via **Settings → OpenAI** (stored in the OS keychain) — or,
+for dev, export `OPENAI_API_KEY` before `npm run dev`. The key lives only in
+the Rust core; a grep of `src/` must never find it or an `api.openai.com` call.
+Once a key is set, the chat tab streams real `gpt-4o-mini` replies through the
+core (`chat_send` → `chat_token`/`chat_done` events).
+
+### Linux build note
+
+The `keyring` crate uses the Secret Service on Linux, so building/running
+there needs `libsecret` dev headers (e.g. `sudo apt install libsecret-1-dev`)
+plus a running keyring daemon (GNOME Keyring / KWallet). macOS and Windows use
+the native keychain — no extra deps.
 
 ### Icons
 
@@ -59,7 +68,7 @@ core; a grep of `src/` must never find it or an `api.openai.com` call.
 | # | Sprint | Deliverable | Status |
 |---|--------|-------------|--------|
 | 1 | **Shell + loader + design system** | Tauri shell, cinematic loader, WebAudio SFX, failsafe, the dark-glass UI + nav/panels. The signature — built first. | **scaffolded** |
-| 2 | **Chat + LLM (text)** | Orchestrator, OpenAI chat-completions with `tools`, token streaming to the chat UI, tool-call deltas. | next |
+| 2 | **Chat + LLM (text)** | Orchestrator, OpenAI chat-completions with `tools`, token streaming to the chat UI, tool-call deltas. | **in progress** — real streaming chat-completions in the core, key in OS keychain, chat UI wired via events. Tool-call deltas next |
 | 3 | **Voice** | Mic capture + local VAD (1.2–1.5s turn-taking), STT, TTS per sentence, barge-in, orb states driven by live TTS amplitude. | planned |
 | 4 | **Skills framework + first tools** | Tool router + events; tasks/boards, goals, reminders against SQLite. ≥8 tools registered, panels re-render live. | **in progress** — local persistence (tasks, finance, agents, settings) via `store.js`; SQLite-in-core next |
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |

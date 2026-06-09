@@ -1,24 +1,25 @@
-//! Dialog orchestrator: builds context, calls the LLM, routes tool calls,
-//! and streams the reply back to the UI.
-//!
-//! Sprint 1 scaffold — emits a canned, streamed reply so the chat/voice
-//! loop is wired end-to-end (frontend ↔ core via events). Sprint 2 swaps
-//! the body for the real OpenAI streaming call in `openai::chat`.
+//! Dialog orchestrator: builds context, calls the LLM, and streams the
+//! reply back to the UI via events. Tool routing layers on in Sprint 4.
 
+use serde_json::json;
 use tauri::{AppHandle, Emitter};
 
-pub fn handle_turn(app: AppHandle, text: String, _mode: String) {
-    std::thread::spawn(move || {
-        let reply = format!(
-            "Core online. You said: \"{}\". Live OpenAI streaming arrives in Sprint 2.",
-            text
-        );
+const SYSTEM_PROMPT: &str = "You are J.A.R.V.I.S., a calm, dry-witted personal assistant. \
+Be concise and proactive — prefer doing over asking. Keep everything local and private; \
+never claim to have done something you cannot actually do. When unsure, say so briefly.";
 
-        // Stream token-by-token, the same shape the real pipeline will use.
-        for chunk in reply.split_inclusive(' ') {
-            let _ = app.emit("chat_token", chunk);
-            std::thread::sleep(std::time::Duration::from_millis(26));
+pub async fn handle_turn(app: AppHandle, text: String, _mode: String) {
+    let messages = json!([
+        { "role": "system", "content": SYSTEM_PROMPT },
+        { "role": "user",   "content": text }
+    ]);
+
+    match crate::openai::chat::stream_chat(&app, messages).await {
+        Ok(()) => {}
+        Err(e) => {
+            // Surface errors in chat — never swallow them (spec §01/§09).
+            let _ = app.emit("chat_token", format!("⚠ {}", e));
         }
-        let _ = app.emit("chat_done", ());
-    });
+    }
+    let _ = app.emit("chat_done", ());
 }

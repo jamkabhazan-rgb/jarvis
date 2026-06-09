@@ -265,7 +265,14 @@
     }catch(e){}
     refreshProfile();
   }
-  function openSettings(){ loadSettings(); modal.classList.add('open'); A.SFX.blip(); }
+  async function updateKeyState(){
+    const el=$('#api-key-state'); if(!el) return;
+    if(window.BRIDGE && window.BRIDGE.inTauri){
+      try{ const has=await BRIDGE.invoke('has_api_key'); el.textContent = has?'A key is set ✓':'No key set yet'; }
+      catch(e){ el.textContent='core unavailable'; }
+    } else { el.textContent='Available only in the desktop app (not in browser preview)'; }
+  }
+  function openSettings(){ loadSettings(); updateKeyState(); modal.classList.add('open'); A.SFX.blip(); }
   function closeSettings(){ modal.classList.remove('open'); A.SFX.tab(); }
   function flashSaved(){ const s=$('#set-saved'); s.classList.add('show'); setTimeout(()=>s.classList.remove('show'), 2000); }
   function saveSettings(){
@@ -276,6 +283,12 @@
       prompt:$('#set-prompt').value.trim(), toggles
     };
     try{ localStorage.setItem('jarvis.settings', JSON.stringify(data)); }catch(e){}
+    // API key goes only to the core/keychain — never to localStorage
+    const keyInput=$('#set-api-key');
+    if(window.BRIDGE && window.BRIDGE.inTauri && keyInput && keyInput.value.trim()!==''){
+      BRIDGE.invoke('set_api_key', { key:keyInput.value.trim() })
+        .then(()=>{ keyInput.value=''; updateKeyState(); }).catch(()=>{});
+    }
     refreshProfile(); A.SFX.chime(); flashSaved();
   }
   // live profile + avatar
