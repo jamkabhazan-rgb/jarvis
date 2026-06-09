@@ -57,7 +57,9 @@
     const inp = document.createElement('input');
     inp.className='board-input'; inp.placeholder='Board name…'; inp.maxLength=28;
     add.before(inp); inp.focus(); A.SFX.blip();
+    let done=false;
     const commit = ()=>{
+      if(done) return; done=true;
       const v = inp.value.trim();
       if(v){ const id='b'+(++bid); BOARDS.push({id, name:v, tasks:[]}); activeBoard=id; A.SFX.listen(); renderBoards(); renderKanban(); }
       else { inp.remove(); }
@@ -120,7 +122,9 @@
     const ta = document.createElement('textarea');
     ta.className='kc-input'; ta.rows=2; ta.placeholder='Task title… (Enter to add)';
     add.before(ta); ta.focus(); A.SFX.blip();
+    let done=false;
     const commit = ()=>{
+      if(done) return; done=true;
       const v = ta.value.trim();
       if(v){ board().tasks.push({id:++uid, col:colId, text:v, pri:'med', tag:'', due:''}); A.SFX.listen(); renderKanban(); }
       else { ta.remove(); }
