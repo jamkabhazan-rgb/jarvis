@@ -12,8 +12,6 @@
 
 use serde_json::{json, Value};
 
-pub mod tasks;
-
 /// The tool definitions advertised to the model (descriptions kept short).
 pub fn definitions() -> Value {
     json!([

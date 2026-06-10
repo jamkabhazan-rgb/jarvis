@@ -20,8 +20,6 @@
     window.ORB?.set(mode);
     $('#vs-label').textContent = VS[mode].label;
     $('#vs-sub').textContent = sub ?? VS[mode].sub;
-    const conn = $('#chip-voice .led');
-    if(conn) conn.className = 'led' + (mode==='idle'?' warn':'');
   }
 
   // fake amplitude feed to orb + wave bars
@@ -415,7 +413,7 @@
         ev.stopPropagation();
         saveChatlog(chatlog().filter(x=>x.id!==s.id));
         if(s.id===sessionId) sessionId=null;
-        renderHistory($('#hist-search').value); A.SFX.off();
+        renderHistory($('#hist-search')?.value || ''); A.SFX.off();
       });
       list.appendChild(el);
     });

@@ -54,7 +54,7 @@
     const spent  = CATS.reduce((s,c)=>s+c.spent,0);
     const left   = budget - spent;
     const safe   = Math.max(0, left/DAYS_LEFT);
-    const pct    = Math.min(100, spent/budget*100);
+    const pct    = budget > 0 ? Math.min(100, spent/budget*100) : 0;
     const box = $('#fin-summary'); box.innerHTML='';
     box.innerHTML = `
       <div class="safe">
