@@ -458,6 +458,47 @@
         </div>
       </section>
 
+      <!-- computer control -->
+      <section class="sp-card">
+        <h3>Computer control</h3>
+        <p class="sp-desc">Lets Jarvis act on this computer — open apps and folders, find files, check system info. <b>Off by default.</b> Even when on, every command shows up as a card in chat and runs only after you click RUN. This toggle is also the kill-switch: flip it off and execution stops instantly, everywhere.</p>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Allow Jarvis to run commands</div><div class="tr-s">One command at a time · your approval required for each</div></div><div class="switch" data-toggle="system" id="sys-switch"></div></div>
+        <div class="field"><div class="hint" id="sys-state">Checking…</div></div>
+        <div class="sp-divider"></div>
+        <div class="sp-sub">Audit log — every executed command</div>
+        <div class="sys-log" id="sys-log"><div class="sys-log-empty">Nothing executed yet.</div></div>
+        <div class="field-foot">
+          <span class="field-msg"></span>
+          <button class="btn ghost" id="sys-log-clear">CLEAR LOG</button>
+        </div>
+      </section>
+
+      <!-- setup guide -->
+      <section class="sp-card">
+        <h3>Setup guide</h3>
+        <p class="sp-desc">Everything you need to configure for Jarvis to be fully operational.</p>
+        <ol class="setup-steps">
+          <li>
+            <b>OpenAI API key — required.</b> The whole AI surface (chat, voice, tools, agents) runs on one key.
+            Create it at <span class="mono-link">platform.openai.com/api-keys</span> (account needs billing enabled — pay-as-you-go, a few $ is plenty to start),
+            paste it in the <b>OpenAI</b> section above and hit SAVE CHANGES. It goes straight to your OS keychain — never stored in the app or sent anywhere except OpenAI.
+          </li>
+          <li>
+            <b>Microphone.</b> Press the mic button once — the OS will ask for permission on first use (macOS: System Settings → Privacy → Microphone; Windows prompts automatically).
+            After that voice is hands-free: just talk, a ~1.3s pause ends your turn, Jarvis answers out loud and keeps listening. Press the mic again to stop.
+          </li>
+          <li>
+            <b>Identity &amp; persona.</b> Set your name and tune the core system prompt in the sections above — it shapes how Jarvis talks in every conversation and for every agent.
+          </li>
+          <li>
+            <b>Computer control — optional.</b> Flip the toggle above if you want Jarvis to operate this machine. Every command still needs your one-click approval and lands in the audit log.
+          </li>
+          <li>
+            <b>Updates.</b> The app checks GitHub Releases for new versions. You can always grab the latest installer from the project's Releases page.
+          </li>
+        </ol>
+      </section>
+
       <!-- privacy -->
       <section class="sp-card">
         <h3>Privacy</h3>

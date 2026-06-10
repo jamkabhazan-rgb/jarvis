@@ -4,7 +4,11 @@
 //! matching panel applies the change, and feeds a human-readable result back
 //! to the model. *Read* tools answer from the per-turn `state` snapshot the
 //! frontend passes in (panels own the data; SQLite-in-core comes later).
-//! No shell execution in the base build (§13/§17).
+//!
+//! Computer control (§17): the `computer_run` tool is advertised only when
+//! the user has enabled it in Settings, and it never executes anything —
+//! it proposes a command; the frontend shows a confirmation card and only
+//! an explicit user click triggers the separate `system_execute` command.
 
 use serde_json::{json, Value};
 
@@ -89,6 +93,14 @@ pub fn definitions() -> Value {
             "name":"research_query",
             "description":"Queue a web-research task that searches and summarizes a topic.",
             "parameters":{"type":"object","properties":{"query":{"type":"string"}},"required":["query"]}
+        }},
+        { "type":"function", "function": {
+            "name":"computer_run",
+            "description":"Propose ONE shell command to run on the user's computer (macOS: sh, Windows: cmd). It does NOT run immediately — the user sees the exact command and must approve it first. Use for opening apps/files/folders, finding files, or system info. Prefer simple, non-destructive commands.",
+            "parameters":{"type":"object","properties":{
+                "command":{"type":"string","description":"the exact shell command"},
+                "why":{"type":"string","description":"one short line shown to the user explaining what it does"}
+            },"required":["command"]}
         }}
     ])
 }
@@ -99,7 +111,7 @@ pub fn is_mutating(name: &str) -> bool {
     matches!(
         name,
         "task_add" | "task_move" | "board_add" | "goal_set" | "habit_log"
-            | "note_add" | "finance_add_expense" | "research_query"
+            | "note_add" | "finance_add_expense" | "research_query" | "computer_run"
     )
 }
 
@@ -138,6 +150,10 @@ pub fn execute(name: &str, args: &Value, state: &Value) -> String {
         "research_query" => format!(
             "Queued research on \"{}\" — searching and summarizing.",
             args["query"].as_str().unwrap_or("")
+        ),
+        "computer_run" => format!(
+            "Proposed `{}` to the user — it runs only after they approve it on the confirmation card; the output will appear there. Tell the user it's awaiting their approval.",
+            args["command"].as_str().unwrap_or("")
         ),
 
         // ----- read: answer from the snapshot -----

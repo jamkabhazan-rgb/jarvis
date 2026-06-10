@@ -237,3 +237,31 @@
 .vault-editor .ve-body{width:100%;min-height:160px;resize:vertical;background:rgba(0,0,0,.4);border:1px solid var(--glass-border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6;outline:none;transition:border-color .2s}
 .vault-editor input:focus,.vault-editor textarea:focus{border-color:var(--glass-border-hi)}
 .vault-editor .ve-foot{display:flex;align-items:center;gap:10px}
+
+/* ===================== COMPUTER CONTROL · settings + chat cards ===================== */
+.sys-log{border:1px solid var(--glass-border);border-radius:10px;background:rgba(0,0,0,.3);max-height:220px;overflow-y:auto;font-family:var(--mono);font-size:11px}
+.sys-log-empty{padding:14px;color:var(--muted);letter-spacing:.04em}
+.sys-log-row{display:flex;gap:10px;align-items:baseline;padding:9px 12px;border-top:1px solid var(--glass-border)}
+.sys-log-row:first-child{border-top:none}
+.sys-log-row .sl-ts{color:var(--muted);white-space:nowrap}
+.sys-log-row .sl-cmd{flex:1;color:var(--text-dim);word-break:break-all}
+.sys-log-row .sl-code{white-space:nowrap;color:var(--ok)}
+.sys-log-row .sl-code.err{color:var(--danger)}
+.sys-log-row .sl-code.deny{color:var(--gold)}
+
+.setup-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:13px;color:var(--text-dim);font-size:13px;line-height:1.65}
+.setup-steps li::marker{color:var(--accent);font-weight:600}
+.setup-steps b{color:var(--text)}
+.setup-steps .mono-link{font-family:var(--mono);color:var(--accent);font-size:12px}
+
+/* command confirmation card in chat */
+.sys-card .tc-head{color:var(--gold);background:rgba(255,179,71,.07)}
+.sys-card .sc-cmd{font-family:var(--mono);font-size:12px;color:var(--text);background:rgba(0,0,0,.4);border-radius:7px;padding:8px 10px;margin:4px 0 8px;word-break:break-all}
+.sys-card .sc-why{color:var(--muted);font-size:11px;margin-bottom:8px}
+.sys-card .sc-actions{display:flex;gap:8px}
+.sys-card .sc-actions .btn{padding:7px 14px;font-size:10.5px}
+.sys-card .sc-out{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--text-dim);white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;background:rgba(0,0,0,.35);border-radius:7px;padding:8px 10px}
+.sys-card .sc-status{margin-top:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}
+.sys-card .sc-status.ok{color:var(--ok)}
+.sys-card .sc-status.err{color:var(--danger)}
+.sys-card .sc-status.deny{color:var(--gold)}

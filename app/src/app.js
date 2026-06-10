@@ -139,13 +139,67 @@
         setVoice(live?'listening':'idle');
       }
     });
-    await BRIDGE.listen('tool_call', tc=>{
+    await BRIDGE.listen('chat_tool_call', tc=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
-      renderToolCard(tc);
       coreBubble=null; // next chat_token starts a fresh reply bubble
+      if(tc.name==='computer_run'){ renderSysConfirm(tc.args||{}); return; } // approval card, not auto-applied
+      renderToolCard(tc);
       try{ window.JTOOLS && window.JTOOLS[tc.name] && window.JTOOLS[tc.name](tc.args||{}); }catch(e){ console.warn('tool apply failed', e); }
     });
   }
+  // computer_run proposal → confirmation card (spec §17). Nothing executes
+  // until the user clicks RUN; the result and an audit-log entry follow.
+  function renderSysConfirm(args){
+    const cmd = String(args.command||'').trim();
+    const why = String(args.why||'').trim();
+    if(!cmd) return;
+    const el = document.createElement('div'); el.className='msg j';
+    el.innerHTML = `<div class="av">J</div><div class="body"><div class="who">JARVIS</div><div class="txt">
+      <div class="tool-call sys-card"><div class="tc-head">⌘ computer · approval required</div><div class="tc-body">
+        <div class="sc-cmd">${escapeHtml(cmd)}</div>
+        ${why?`<div class="sc-why">${escapeHtml(why)}</div>`:''}
+        <div class="sc-actions"><button class="btn primary sc-run">RUN</button><button class="btn ghost sc-deny">CANCEL</button></div>
+      </div></div></div></div>`;
+    stream.appendChild(el); scrollBottom();
+    const body = el.querySelector('.tc-body');
+    const runBtn = el.querySelector('.sc-run'), denyBtn = el.querySelector('.sc-deny');
+    const finish = (cls, text)=>{
+      el.querySelector('.sc-actions')?.remove();
+      const s = document.createElement('div'); s.className='sc-status '+cls; s.textContent=text;
+      body.appendChild(s); scrollBottom();
+    };
+    const logEntry = (entry)=>{
+      try{
+        const log = STORE.load('syslog', []) || [];
+        log.push(entry); while(log.length>100) log.shift();
+        STORE.save('syslog', log);
+        window.JSYS?.renderSysLog();
+      }catch(e){}
+    };
+    const now = ()=> new Date().toLocaleString();
+    denyBtn.addEventListener('click', ()=>{
+      finish('deny','✕ DENIED — not executed');
+      logEntry({ ts:now(), cmd, status:'denied' });
+      A.SFX.off();
+    });
+    runBtn.addEventListener('click', async ()=>{
+      runBtn.disabled = denyBtn.disabled = true; runBtn.textContent = 'RUNNING…';
+      try{
+        const r = await BRIDGE.invoke('system_execute', { command: cmd });
+        const out = [r.stdout, r.stderr].filter(s=>s && s.trim()).join('\n').trim();
+        if(out){ const pre=document.createElement('div'); pre.className='sc-out'; pre.textContent=out; body.insertBefore(pre, el.querySelector('.sc-actions')); }
+        const ok = r.code===0 && !r.timed_out;
+        finish(ok?'ok':'err', r.timed_out ? '⏱ TIMEOUT — killed after 30s' : (ok ? '✓ exit 0' : '⚠ exit '+r.code));
+        logEntry({ ts:now(), cmd, code:r.code, timed_out:!!r.timed_out });
+        A.SFX.chime();
+      }catch(err){
+        finish('err','⚠ '+String(err));
+        logEntry({ ts:now(), cmd, status:'error' });
+        A.SFX.off();
+      }
+    });
+  }
+
   function renderToolCard(tc){
     const body = tc.args ? JSON.stringify(tc.args) : '';
     const html = `<div class="tool-call"><div class="tc-head">⚙ tool · ${escapeHtml(tc.name)}<span class="tc-ok">✓ ok</span></div><div class="tc-body">${escapeHtml(body)}</div></div>`;
@@ -165,7 +219,9 @@
           tasks:(b.tasks||[]).map(x=>({ text:x.text, col:x.col, pri:x.pri, due:x.due })) })) } : null,
         finance: f ? { accounts:(f.accounts||[]).map(a=>({ name:a.name, balance:a.balance })),
           cats:(f.cats||[]).map(c=>({ name:c.name, budget:c.budget, spent:c.spent })) } : null,
-        vault: v ? (v.notes||[]).map(n=>({ title:n.title, tags:n.tags })) : null
+        vault: v ? (v.notes||[]).map(n=>({ title:n.title, tags:n.tags })) : null,
+        // live value of the Settings toggle — gates the computer_run tool in the core
+        system: { enabled: !!document.querySelector('.switch[data-toggle="system"]')?.classList.contains('on') }
       };
     }catch(e){ return null; }
   }

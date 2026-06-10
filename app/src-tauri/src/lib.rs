@@ -10,6 +10,7 @@ use tauri::AppHandle;
 
 mod openai;
 mod orchestrator;
+mod system;
 mod tools;
 
 /// Liveness check the frontend can use to confirm the core is reachable.
@@ -89,6 +90,26 @@ async fn speak(text: String) -> Result<String, String> {
     Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
 }
 
+/// Computer control master switch (spec §17). Synced from the Settings
+/// toggle; flipping it off is the kill-switch — execution stops at once.
+#[tauri::command]
+fn system_set_enabled(on: bool) {
+    system::set_enabled(on);
+}
+
+#[tauri::command]
+fn system_enabled() -> bool {
+    system::enabled()
+}
+
+/// Execute a shell command the user just approved on a confirmation card.
+/// Refuses unless computer control is enabled. The model itself can never
+/// reach this — it only proposes commands via the `computer_run` tool.
+#[tauri::command]
+async fn system_execute(command: String) -> Result<serde_json::Value, String> {
+    system::execute(command).await
+}
+
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -98,7 +119,10 @@ pub fn run() {
             set_api_key,
             has_api_key,
             transcribe,
-            speak
+            speak,
+            system_set_enabled,
+            system_enabled,
+            system_execute
         ])
         .run(tauri::generate_context!())
         .expect("error while running J.A.R.V.I.S.");

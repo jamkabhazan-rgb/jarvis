@@ -272,7 +272,7 @@
       catch(e){ el.textContent='core unavailable'; }
     } else { el.textContent='Available only in the desktop app (not in browser preview)'; }
   }
-  function openSettings(){ loadSettings(); updateKeyState(); modal.classList.add('open'); A.SFX.blip(); }
+  function openSettings(){ loadSettings(); updateKeyState(); syncSysControl(); renderSysLog(); modal.classList.add('open'); A.SFX.blip(); }
   function closeSettings(){ modal.classList.remove('open'); A.SFX.tab(); }
   function flashSaved(){ const s=$('#set-saved'); s.classList.add('show'); setTimeout(()=>s.classList.remove('show'), 2000); }
   function saveSettings(){
@@ -311,6 +311,39 @@
     msg.textContent='✓ Password updated'; msg.classList.add('ok'); A.SFX.chime();
     $('#set-pass-cur').value=$('#set-pass-new').value=$('#set-pass-confirm').value=''; $('#pm-fill').style.width='0%';
   });
+  /* ===================== COMPUTER CONTROL (spec §17) ===================== */
+  // The Settings toggle is the master switch AND the kill-switch: it syncs to
+  // the core immediately on click (no SAVE needed to turn it off).
+  async function syncSysControl(){
+    const sw = $('#sys-switch'), st = $('#sys-state');
+    const on = !!sw?.classList.contains('on');
+    if(window.BRIDGE && window.BRIDGE.inTauri){
+      try{
+        await BRIDGE.invoke('system_set_enabled', { on });
+        if(st) st.textContent = on
+          ? 'ENABLED — Jarvis can propose commands; each one still needs your RUN click'
+          : 'Disabled — the model cannot even see the command tool';
+      }catch(e){ if(st) st.textContent = 'core unavailable'; }
+    } else if(st){ st.textContent = 'Available only in the desktop app (not in browser preview)'; }
+  }
+  function renderSysLog(){
+    const root = $('#sys-log'); if(!root) return;
+    const log = STORE.load('syslog', []) || [];
+    if(!log.length){ root.innerHTML = '<div class="sys-log-empty">Nothing executed yet.</div>'; return; }
+    root.innerHTML = '';
+    log.slice().reverse().forEach(e=>{
+      const row = document.createElement('div'); row.className = 'sys-log-row';
+      const cls = e.status==='denied' ? 'deny' : (e.status==='error' || e.timed_out || e.code!==0 ? 'err' : '');
+      const label = e.status==='denied' ? 'DENIED' : e.status==='error' ? 'ERROR' : e.timed_out ? 'TIMEOUT' : 'exit '+e.code;
+      row.innerHTML = `<span class="sl-ts">${esc(e.ts||'')}</span><span class="sl-cmd">${esc(e.cmd||'')}</span><span class="sl-code ${cls}">${esc(label)}</span>`;
+      root.appendChild(row);
+    });
+  }
+  window.JSYS = { renderSysLog };
+  $('#sys-log-clear')?.addEventListener('click', ()=>{ STORE.save('syslog', []); renderSysLog(); A.SFX.tab(); });
+  // the generic switch handler (above) toggles the class first; then we sync
+  $('#sys-switch')?.addEventListener('click', ()=> setTimeout(syncSysControl, 0));
+
   $('#open-settings')?.addEventListener('click', openSettings);
   $('#settings-close')?.addEventListener('click', closeSettings);
   $('#settings-save')?.addEventListener('click', saveSettings);
@@ -326,6 +359,8 @@
   // restore mail "connected" view if Gmail was linked
   if(SERVICES.find(s=>s.name==='Gmail')?.linked) setMailConnected(true);
   loadSettings();
+  syncSysControl();   // push the persisted computer-control state to the core on startup
+  renderSysLog();
 
   // apply any goal overrides set previously via the goal_set tool
   (function(){

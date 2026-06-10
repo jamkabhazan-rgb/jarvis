@@ -11,6 +11,10 @@ const TOOLS_NOTE: &str = "You can manage the user's tasks, boards, goals, habits
 expenses and research via the provided tools; call them when appropriate, then confirm in one \
 short line. Keep everything local and private; never claim to have done something you cannot.";
 
+const SYSTEM_NOTE: &str = "Computer control is enabled: computer_run lets you propose ONE shell \
+command at a time; it executes only after the user approves it on screen, so phrase your reply as \
+'awaiting your approval', never as already done.";
+
 fn build_system(persona: &Value) -> String {
     let base = persona["prompt"]
         .as_str()
@@ -51,6 +55,8 @@ fn caps_to_tools(caps: &[String]) -> Vec<String> {
             "finance" => out.extend(["finance_add_expense","finance_summary"].map(String::from)),
             "vault" | "notes" => out.extend(["note_add","vault_search"].map(String::from)),
             "web" => out.push("research_query".into()),
+            // note: computer_run is deliberately NOT mappable to agents — the
+            // approval card UI lives only in the main chat (spec §17)
             _ => {}
         }
     }
@@ -85,12 +91,25 @@ async fn run(
     let token_event = format!("{prefix}_token");
     let tool_event = format!("{prefix}_tool_call");
 
+    // Computer control is opt-in (Settings toggle, mirrored in the state
+    // snapshot): when off, the model never even sees the computer_run tool.
+    let sys_enabled = state["system"]["enabled"].as_bool().unwrap_or(false);
+    let mut sys_prompt = build_system(persona);
+    if sys_enabled {
+        sys_prompt.push_str(&format!("\n\n{}", SYSTEM_NOTE));
+    }
+
     let mut messages: Vec<Value> = vec![
-        json!({ "role": "system", "content": build_system(persona) }),
+        json!({ "role": "system", "content": sys_prompt }),
         json!({ "role": "user", "content": text }),
     ];
 
-    let defs = filtered_defs(&allow);
+    let mut defs = filtered_defs(&allow);
+    if !sys_enabled {
+        if let Some(arr) = defs.as_array_mut() {
+            arr.retain(|d| d["function"]["name"].as_str() != Some("computer_run"));
+        }
+    }
     let tools_arg = if defs.as_array().map(|a| a.is_empty()).unwrap_or(true) { None } else { Some(defs) };
 
     // Round 1: let the model decide whether to call tools.
