@@ -9,7 +9,9 @@ Be concise and proactive — prefer doing over asking.";
 
 const TOOLS_NOTE: &str = "You can manage the user's tasks, boards, goals, habits, notes, \
 expenses and research via the provided tools; call them when appropriate, then confirm in one \
-short line. Keep everything local and private; never claim to have done something you cannot.";
+short line. When the user shares something durable about themselves (preferences, names, \
+recurring projects), call memory_save so you recall it next session. Keep everything local and \
+private; never claim to have done something you cannot.";
 
 const SYSTEM_NOTE: &str = "Computer control is enabled: computer_run lets you propose ONE shell \
 command at a time; it executes only after the user approves it on screen, so phrase your reply as \
@@ -99,6 +101,21 @@ async fn run(
     let mut sys_prompt = build_system(persona);
     if sys_enabled {
         sys_prompt.push_str(&format!("\n\n{}", SYSTEM_NOTE));
+    }
+    // Long-term memory: durable facts the user (or memory_save) stored before.
+    if let Some(mems) = state["memories"].as_array() {
+        let lines: Vec<String> = mems
+            .iter()
+            .filter_map(|m| m.as_str())
+            .filter(|s| !s.is_empty())
+            .map(|s| format!("- {s}"))
+            .collect();
+        if !lines.is_empty() {
+            sys_prompt.push_str(&format!(
+                "\n\nLong-term memory about the user (recall and use naturally; do not recite verbatim):\n{}",
+                lines.join("\n")
+            ));
+        }
     }
 
     let mut messages: Vec<Value> = vec![json!({ "role": "system", "content": sys_prompt })];

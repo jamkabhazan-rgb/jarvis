@@ -95,6 +95,20 @@ pub fn definitions() -> Value {
             "parameters":{"type":"object","properties":{"query":{"type":"string"}},"required":["query"]}
         }},
         { "type":"function", "function": {
+            "name":"memory_save",
+            "description":"Save a durable fact, preference or detail about the user to long-term memory so you remember it in future sessions. Use when the user shares something worth remembering (name, preferences, recurring projects, important people, how they like things done).",
+            "parameters":{"type":"object","properties":{
+                "fact":{"type":"string","description":"a concise, self-contained fact to remember, e.g. 'Prefers metric units' or 'Daughter is named Mia'"}
+            },"required":["fact"]}
+        }},
+        { "type":"function", "function": {
+            "name":"memory_forget",
+            "description":"Remove a remembered fact from long-term memory. Match it by (part of) its text.",
+            "parameters":{"type":"object","properties":{
+                "query":{"type":"string","description":"text (or part) of the memory to forget"}
+            },"required":["query"]}
+        }},
+        { "type":"function", "function": {
             "name":"computer_run",
             "description":"Propose ONE shell command to run on the user's computer (macOS: sh, Windows: cmd). It does NOT run immediately — the user sees the exact command and must approve it first. Use for opening apps/files/folders, finding files, or system info. Prefer simple, non-destructive commands.",
             "parameters":{"type":"object","properties":{
@@ -112,6 +126,7 @@ pub fn is_mutating(name: &str) -> bool {
         name,
         "task_add" | "task_move" | "board_add" | "goal_set" | "habit_log"
             | "note_add" | "finance_add_expense" | "research_query" | "computer_run"
+            | "memory_save" | "memory_forget"
     )
 }
 
@@ -154,6 +169,14 @@ pub fn execute(name: &str, args: &Value, state: &Value) -> String {
         "computer_run" => format!(
             "Proposed `{}` to the user — it runs only after they approve it on the confirmation card; the output will appear there. Tell the user it's awaiting their approval.",
             args["command"].as_str().unwrap_or("")
+        ),
+        "memory_save" => format!(
+            "Saved to long-term memory: \"{}\".",
+            args["fact"].as_str().unwrap_or("")
+        ),
+        "memory_forget" => format!(
+            "Forgot memory matching \"{}\".",
+            args["query"].as_str().unwrap_or("")
         ),
 
         // ----- read: answer from the snapshot -----

@@ -447,6 +447,15 @@
         </div>
       </section>
 
+      <!-- long-term memory -->
+      <section class="sp-card">
+        <h3>Long-term memory</h3>
+        <p class="sp-desc">Durable facts Jarvis keeps about you — names, preferences, recurring projects — injected into every conversation so it remembers across sessions. Jarvis adds these itself when you share something worth keeping; you can add or remove them here.</p>
+        <div class="mem-list" id="mem-list"><div class="mem-empty">No memories yet — tell Jarvis something worth remembering.</div></div>
+        <div class="link-add" style="margin-top:12px"><input id="mem-input" placeholder="Add a fact, e.g. “Prefers metric units”"><button class="btn ghost" id="mem-add">ADD</button></div>
+        <div class="field-foot"><span class="field-msg"></span><button class="btn ghost" id="mem-clear">CLEAR ALL</button></div>
+      </section>
+
       <!-- openai -->
       <section class="sp-card">
         <h3>OpenAI</h3>
@@ -524,6 +533,74 @@
             <b>Updates.</b> The app checks GitHub Releases for new versions. You can always grab the latest installer from the project's Releases page.
           </li>
         </ol>
+      </section>
+
+      <!-- docs -->
+      <section class="sp-card docs-card">
+        <h3>Docs — how Jarvis works</h3>
+        <p class="sp-desc">The full picture, plainly. Click a topic to expand.</p>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Architecture &amp; privacy</summary>
+          <div class="doc-body">
+            <p>Jarvis is a native desktop app (macOS &amp; Windows). The interface you see is a web layer; underneath runs a compiled <b>Rust core</b> that does all the real work and <b>owns your OpenAI key</b>.</p>
+            <ul>
+              <li>The key lives only in the OS keychain (macOS Keychain / Windows Credential Manager) — never in the app bundle, never in logs, never sent anywhere but OpenAI on your own account.</li>
+              <li>The web layer talks to the core through small typed calls and receives streamed results back — it never touches the key or calls OpenAI directly.</li>
+              <li>Everything is local-first: your tasks, notes, finance, memory and audit log stay on your machine.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Chat, voice &amp; memory</summary>
+          <div class="doc-body">
+            <ul>
+              <li><b>Chat</b> streams replies token-by-token from <code>gpt-4o-mini</code>. Transient network/rate errors retry automatically with backoff.</li>
+              <li><b>Voice</b> is hands-free: press the mic once, just talk. Local voice-activity detection ends your turn after ~1.3s of silence, transcribes it, Jarvis answers and speaks each sentence as it's generated, then keeps listening. Start talking over it to interrupt (barge-in).</li>
+              <li><b>Short-term memory</b> — the recent back-and-forth of the current conversation is always in context.</li>
+              <li><b>Long-term memory</b> — durable facts (names, preferences, projects) are saved with the <code>memory_save</code> tool and injected into every future conversation, so Jarvis remembers across sessions and restarts. Manage them in the Long-term memory section above.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Skills &amp; live panels</summary>
+          <div class="doc-body">
+            <p>Jarvis acts through tools. When you ask for something, it calls the right one and the matching panel updates live:</p>
+            <ul>
+              <li><b>Tasks/boards</b> — add, move, list, create boards.</li>
+              <li><b>Goals &amp; tracker</b> — set goal progress, log habits.</li>
+              <li><b>Knowledge vault</b> — save and search notes.</li>
+              <li><b>Finance</b> — record expenses, summarize the budget.</li>
+              <li><b>Research</b> — queue a topic to search &amp; summarize.</li>
+              <li><b>Memory</b> — remember/forget durable facts.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Computer control &amp; agents</summary>
+          <div class="doc-body">
+            <p>Jarvis — and any agent you grant the <b>Computer / shell</b> capability — can operate this machine: open apps and folders, find files, run builds, deploy.</p>
+            <ul>
+              <li><b>Nothing runs on its own.</b> A command appears as a card showing the exact text; it executes only after you click RUN (30s timeout, output shown inline).</li>
+              <li>Every run and denial is written to the <b>audit log</b> (in Computer control), tagged with the agent name when an agent issued it.</li>
+              <li>The Computer control toggle is the <b>kill-switch</b> — turn it off and execution stops instantly, everywhere, including agents.</li>
+              <li><b>Agents</b> are scoped assistants you build with their own prompt, tools and knowledge. They run in their own window with their own memory.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Cost control &amp; updates</summary>
+          <div class="doc-body">
+            <ul>
+              <li><b>Usage &amp; cost</b> tallies real tokens from every response and estimates spend per month. Set a monthly budget and Jarvis warns you as you approach it.</li>
+              <li><b>Updates</b> — the app checks for new signed releases and offers a one-click “Update &amp; restart”. Each update's signature is verified before it installs.</li>
+            </ul>
+          </div>
+        </details>
       </section>
 
       <!-- privacy -->

@@ -226,6 +226,8 @@
         finance: f ? { accounts:(f.accounts||[]).map(a=>({ name:a.name, balance:a.balance })),
           cats:(f.cats||[]).map(c=>({ name:c.name, budget:c.budget, spent:c.spent })) } : null,
         vault: v ? (v.notes||[]).map(n=>({ title:n.title, tags:n.tags })) : null,
+        // durable facts about the user — injected into the system prompt
+        memories: (STORE.load('memories', []) || []).map(m=>m.text).filter(Boolean),
         // live value of the Settings toggle — gates the computer_run tool in the core
         system: { enabled: !!document.querySelector('.switch[data-toggle="system"]')?.classList.contains('on') }
       };

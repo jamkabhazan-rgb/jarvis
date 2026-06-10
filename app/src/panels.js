@@ -295,7 +295,40 @@
       if(inp){ inp.disabled=true; inp.placeholder='Available in the desktop app only'; }
     }
   }
-  function openSettings(){ loadSettings(); updateKeyState(); syncSysControl(); renderSysLog(); renderUsage(); modal.classList.add('open'); A.SFX.blip(); }
+  /* ===================== LONG-TERM MEMORY ===================== */
+  function loadMem(){ return STORE.load('memories', []) || []; }
+  function saveMem(arr){ STORE.save('memories', arr); }
+  let muid = (STORE.load('memuid', null)) || 1;
+  function renderMem(){
+    const root=$('#mem-list'); if(!root) return;
+    const mem=loadMem();
+    if(!mem.length){ root.innerHTML='<div class="mem-empty">No memories yet — tell Jarvis something worth remembering.</div>'; return; }
+    root.innerHTML='';
+    mem.forEach(m=>{
+      const el=document.createElement('div'); el.className='mem-item';
+      el.innerHTML=`<span class="mi-dot"></span><span class="mi-text">${esc(m.text)}</span><span class="mi-x" title="Forget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></span>`;
+      el.querySelector('.mi-x').addEventListener('click', ()=>{ saveMem(loadMem().filter(x=>x.id!==m.id)); renderMem(); A.SFX.tab(); });
+      root.appendChild(el);
+    });
+  }
+  function addMem(text){
+    const t=String(text||'').trim(); if(!t) return;
+    const mem=loadMem(); mem.push({ id:muid++, text:t, ts:Date.now() });
+    saveMem(mem); STORE.save('memuid', muid); renderMem();
+  }
+  $('#mem-add')?.addEventListener('click', ()=>{ const i=$('#mem-input'); addMem(i.value); i.value=''; A.SFX.blip(); });
+  $('#mem-input')?.addEventListener('keydown', e=>{ if(e.key==='Enter'){ addMem(e.target.value); e.target.value=''; A.SFX.blip(); } });
+  $('#mem-clear')?.addEventListener('click', ()=>{ saveMem([]); renderMem(); A.SFX.off(); });
+
+  // tool handlers (core → memory store)
+  window.JTOOLS = window.JTOOLS || {};
+  window.JTOOLS.memory_save = (a)=> addMem(a.fact);
+  window.JTOOLS.memory_forget = (a)=>{
+    const q=String(a.query||'').toLowerCase(); if(!q) return;
+    saveMem(loadMem().filter(m=>!m.text.toLowerCase().includes(q))); renderMem();
+  };
+
+  function openSettings(){ loadSettings(); updateKeyState(); syncSysControl(); renderSysLog(); renderUsage(); renderMem(); modal.classList.add('open'); A.SFX.blip(); }
   function closeSettings(){ modal.classList.remove('open'); A.SFX.tab(); }
   function flashSaved(){ const s=$('#set-saved'); s.classList.add('show'); setTimeout(()=>s.classList.remove('show'), 2000); }
   function saveSettings(){
