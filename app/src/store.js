@@ -59,7 +59,10 @@
     if(hydrated) return;
     if(!useCore){ hydrated = true; return; }
     try{
-      const all = await B.invoke('store_get_all') || {};
+      // Never let a wedged core black-hole boot: race the load against a
+      // timeout so the app always proceeds (worst case from an empty cache).
+      const timeout = new Promise((_, rej)=> setTimeout(()=> rej(new Error('store hydrate timeout')), 5000));
+      const all = await Promise.race([ B.invoke('store_get_all'), timeout ]) || {};
       Object.assign(cache, all);
       if(Object.keys(all).length === 0){
         let migrated = 0;

@@ -29,6 +29,15 @@ fn now_ms() -> i64 {
 /// a second call is reported as an error and ignored.
 pub fn init(path: PathBuf) -> Result<(), String> {
     let conn = Connection::open(&path).map_err(|e| format!("open db: {e}"))?;
+    // WAL keeps reads/writes from blocking each other and survives an abrupt
+    // process exit far better than the default rollback journal; busy_timeout
+    // makes the occasional concurrent access wait rather than fail.
+    conn.execute_batch(
+        "PRAGMA journal_mode = WAL;
+         PRAGMA synchronous = NORMAL;
+         PRAGMA busy_timeout = 4000;",
+    )
+    .map_err(|e| format!("pragmas: {e}"))?;
     conn.execute(
         "CREATE TABLE IF NOT EXISTS kv (
             key     TEXT PRIMARY KEY,
