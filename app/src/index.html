@@ -130,6 +130,14 @@
         <div class="panel-head">
           <h2 id="panel-title">Conversation</h2>
           <span class="ph-meta" id="panel-meta">LOCAL LLM · LLAMA 3.x</span>
+          <div class="ph-actions" id="chat-controls">
+            <button class="icon-btn sm" id="chat-new" title="New conversation">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="icon-btn sm" id="chat-history" title="Conversation history">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </button>
+          </div>
         </div>
 
         <!-- CHAT -->
@@ -560,6 +568,7 @@
               <li><b>Voice</b> is hands-free: press the mic once, just talk. Local voice-activity detection ends your turn after ~1.3s of silence, transcribes it, Jarvis answers and speaks each sentence as it's generated, then keeps listening. Start talking over it to interrupt (barge-in).</li>
               <li><b>Short-term memory</b> — the recent back-and-forth of the current conversation is always in context.</li>
               <li><b>Long-term memory</b> — durable facts (names, preferences, projects) are saved with the <code>memory_save</code> tool and injected into every future conversation, so Jarvis remembers across sessions and restarts. Manage them in the Long-term memory section above.</li>
+              <li><b>Conversation archive</b> — every chat is saved in full. The clock icon in the chat header opens the history: browse all past conversations, search across them by any word, reopen one to keep talking, delete, or export them all to JSON. The <b>+</b> starts a fresh conversation.</li>
             </ul>
           </div>
         </details>

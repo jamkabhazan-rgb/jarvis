@@ -116,6 +116,33 @@
   function rememberUser(text){ convo.push({role:'user', content:text}); }
   function rememberAssistant(text){ if(text && text.trim()) convo.push({role:'assistant', content:text.trim()});
     while(convo.length>CONVO_MAX) convo.shift(); }
+
+  /* ---------- conversation archive (full transcripts, persisted) ---------- */
+  let sessionId=null;
+  function chatlog(){ return STORE.load('chatlog', []) || []; }
+  function saveChatlog(l){ STORE.save('chatlog', l); }
+  function logUser(text){
+    const l=chatlog(); let s=l.find(x=>x.id===sessionId);
+    if(!s){ sessionId='c'+Date.now(); s={ id:sessionId, title:text.slice(0,52), started:Date.now(), updated:Date.now(), msgs:[] }; l.push(s); }
+    s.msgs.push({role:'user', content:text}); s.updated=Date.now();
+    saveChatlog(l);
+  }
+  function logAssistant(text){
+    if(!text||!text.trim()) return;
+    const l=chatlog(); const s=l.find(x=>x.id===sessionId); if(!s) return;
+    s.msgs.push({role:'assistant', content:text.trim()}); s.updated=Date.now();
+    saveChatlog(l);
+  }
+  function newConversation(){ sessionId=null; convo.length=0; stream.innerHTML=''; A.SFX.blip(); }
+  function openSession(id){
+    const s=chatlog().find(x=>x.id===id); if(!s) return;
+    sessionId=id; stream.innerHTML=''; convo.length=0;
+    s.msgs.forEach(m=>{ addMsg(m.role==='user'?'u':'j', escapeHtml(m.content)); convo.push({role:m.role, content:m.content}); });
+    while(convo.length>CONVO_MAX) convo.shift();
+    closeHistory();
+    // make sure we're on the chat tab
+    document.querySelector('.tab[data-tab="chat"]')?.click();
+  }
   // push completed sentences to the TTS queue as tokens stream in
   function flushSentences(){
     const re=/[^.!?…\n]*[.!?…\n]+/g; let m, consumed=0;
@@ -131,7 +158,7 @@
       if(voiceTurn){ ttsBuf += tok; flushSentences(); }
     });
     await BRIDGE.listen('chat_done', ()=>{
-      rememberAssistant(coreReply);
+      rememberAssistant(coreReply); logAssistant(coreReply);
       coreBubble=null; coreReply='';
       if(voiceTurn){
         voiceTurn=false;
@@ -247,7 +274,7 @@
     addMsg('u', escapeHtml(text));
     setVoice('thinking','Routing through core…');
     const history = convo.slice();   // prior turns, before adding this one
-    rememberUser(text);
+    rememberUser(text); logUser(text);
     coreBubble=null; coreReply=''; ttsBuf=''; coreTyping=typingEl();
     BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat', state: gatherState(), persona: gatherPersona(), history }).catch(err=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
@@ -266,6 +293,7 @@
   function handleUser(text){
     if(window.BRIDGE && window.BRIDGE.inTauri) return handleUserCore(text);
     addMsg('u', escapeHtml(text));
+    logUser(text);
     setVoice('thinking','Parsing intent…');
     A.SFX.think();
     const t = typingEl();
@@ -289,7 +317,7 @@
       const iv=setInterval(()=>{
         p.textContent = say.slice(0,++i);
         scrollBottom();
-        if(i>=say.length){ clearInterval(iv); setVoice(live?'listening':'idle'); }
+        if(i>=say.length){ clearInterval(iv); setVoice(live?'listening':'idle'); logAssistant(say); }
       }, 18);
     }, delay);
   }
@@ -315,6 +343,7 @@
       const view = $('#view-'+id); if(view) view.hidden=false;
       const isChat = (id==='chat');
       $('#composer').style.display = isChat ? 'flex' : 'none';
+      const cc=$('#chat-controls'); if(cc) cc.style.display = isChat ? 'flex' : 'none';
       if(isChat){ $$('.mode-toggle button').forEach(x=>x.classList.toggle('active', x.textContent.trim()==='CHAT')); setTimeout(()=>$('#composer-input')?.focus(),50); }
       $('#panel-title').textContent = tab.dataset.title;
       $('#panel-meta').textContent = tab.dataset.meta || '';
@@ -337,6 +366,72 @@
   });
 
   $('#mic-btn').addEventListener('click', toggleMic);
+
+  /* ---------- conversation history overlay ---------- */
+  function buildHistoryOverlay(){
+    const m=document.createElement('div'); m.className='hist-modal'; m.id='hist-modal';
+    m.innerHTML=`<div class="hist-dialog">
+      <div class="hist-head">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <h2>Conversation history</h2>
+        <input id="hist-search" placeholder="Search all conversations…" autocomplete="off">
+        <button class="btn ghost" id="hist-export">EXPORT</button>
+        <div class="x" id="hist-close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      </div>
+      <div class="hist-list" id="hist-list"></div>
+    </div>`;
+    document.body.appendChild(m);
+    m.addEventListener('click', e=>{ if(e.target===m) closeHistory(); });
+    $('#hist-close').addEventListener('click', closeHistory);
+    $('#hist-search').addEventListener('input', e=> renderHistory(e.target.value));
+    $('#hist-export').addEventListener('click', exportHistory);
+  }
+  function fmtWhen(ts){
+    const d=new Date(ts), now=new Date();
+    const sameDay=d.toDateString()===now.toDateString();
+    return sameDay ? d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString();
+  }
+  function renderHistory(q){
+    const list=$('#hist-list'); if(!list) return;
+    q=(q||'').toLowerCase().trim();
+    let sessions=chatlog().slice().sort((a,b)=>b.updated-a.updated);
+    if(q) sessions=sessions.filter(s=> (s.title||'').toLowerCase().includes(q) || s.msgs.some(m=>(m.content||'').toLowerCase().includes(q)));
+    if(!sessions.length){ list.innerHTML=`<div class="hist-empty">${chatlog().length?'No conversations match.':'No conversations yet — start chatting and they’ll appear here.'}</div>`; return; }
+    list.innerHTML='';
+    sessions.forEach(s=>{
+      const last=s.msgs[s.msgs.length-1];
+      const preview=last?(last.role==='assistant'?'':'You: ')+last.content:'';
+      const el=document.createElement('div'); el.className='hist-row'+(s.id===sessionId?' active':'');
+      el.innerHTML=`<div class="hr-main">
+          <div class="hr-title">${escapeHtml(s.title||'Untitled')}</div>
+          <div class="hr-prev">${escapeHtml(preview.slice(0,90))}</div>
+        </div>
+        <div class="hr-meta"><span class="hr-when">${fmtWhen(s.updated)}</span><span class="hr-count">${s.msgs.length} msg</span></div>
+        <span class="hr-x" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></span>`;
+      el.querySelector('.hr-main').addEventListener('click', ()=> openSession(s.id));
+      el.querySelector('.hr-meta').addEventListener('click', ()=> openSession(s.id));
+      el.querySelector('.hr-x').addEventListener('click', ev=>{
+        ev.stopPropagation();
+        saveChatlog(chatlog().filter(x=>x.id!==s.id));
+        if(s.id===sessionId) sessionId=null;
+        renderHistory($('#hist-search').value); A.SFX.off();
+      });
+      list.appendChild(el);
+    });
+  }
+  function openHistory(){ if(!$('#hist-modal')) buildHistoryOverlay(); renderHistory(''); const s=$('#hist-search'); if(s) s.value=''; $('#hist-modal').classList.add('open'); A.SFX.blip(); setTimeout(()=>s?.focus(),60); }
+  function closeHistory(){ $('#hist-modal')?.classList.remove('open'); }
+  function exportHistory(){
+    try{
+      const blob=new Blob([JSON.stringify(chatlog(), null, 2)], {type:'application/json'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url; a.download='jarvis-conversations.json'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000); A.SFX.chime();
+    }catch(e){ console.warn('export failed', e); }
+  }
+  $('#chat-history')?.addEventListener('click', openHistory);
+  $('#chat-new')?.addEventListener('click', newConversation);
+  addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hist-modal')?.classList.contains('open')) closeHistory(); });
 
   /* ---------- ready hook from boot ---------- */
   window.APP = {
