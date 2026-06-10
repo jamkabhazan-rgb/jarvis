@@ -47,10 +47,23 @@ async fn post_with_retry(body: &Value) -> Result<reqwest::Response, String> {
     Err(format!("OpenAI request failed after {MAX_TRIES} attempts: {last_err}"))
 }
 
+/// Emit token usage to the UI so the Settings → Usage panel can tally cost.
+fn emit_usage(app: &AppHandle, usage: &Value) {
+    let prompt = usage["prompt_tokens"].as_u64().unwrap_or(0);
+    let completion = usage["completion_tokens"].as_u64().unwrap_or(0);
+    if prompt == 0 && completion == 0 {
+        return;
+    }
+    let _ = app.emit(
+        "usage",
+        json!({ "model": super::MODEL_CHAT, "prompt": prompt, "completion": completion }),
+    );
+}
+
 /// One non-streaming completion. Returns `choices[0].message` (which may
 /// contain `tool_calls`). Used for the tool-decision round. `tools`, when
 /// present, is the (possibly filtered) tool-definition array.
-pub async fn complete(messages: Value, tools: Option<Value>) -> Result<Value, String> {
+pub async fn complete(app: &AppHandle, messages: Value, tools: Option<Value>) -> Result<Value, String> {
     let mut body = json!({
         "model": super::MODEL_CHAT,
         "messages": messages,
@@ -63,6 +76,7 @@ pub async fn complete(messages: Value, tools: Option<Value>) -> Result<Value, St
 
     let resp = post_with_retry(&body).await?;
     let v: Value = resp.json().await.map_err(|e| e.to_string())?;
+    emit_usage(app, &v["usage"]);
     Ok(v["choices"][0]["message"].clone())
 }
 
@@ -73,6 +87,7 @@ pub async fn stream_chat(app: &AppHandle, messages: Value, token_event: &str) ->
         "model": super::MODEL_CHAT,
         "messages": messages,
         "stream": true,
+        "stream_options": { "include_usage": true },
         "temperature": 0.6
     });
 
@@ -99,6 +114,10 @@ pub async fn stream_chat(app: &AppHandle, messages: Value, token_event: &str) ->
                     if !tok.is_empty() {
                         let _ = app.emit(token_event, tok);
                     }
+                }
+                // the final chunk (with include_usage) carries token totals
+                if v["usage"].is_object() {
+                    emit_usage(app, &v["usage"]);
                 }
             }
         }

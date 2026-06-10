@@ -289,3 +289,16 @@
 .update-toast .ut-txt{font-family:var(--mono);font-size:12px;color:var(--text-dim);letter-spacing:.04em}
 .update-toast .ut-txt b{color:var(--accent)}
 .update-toast .btn{padding:8px 14px;font-size:10.5px}
+
+/* ===================== USAGE & COST ===================== */
+.usage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.usage-grid .ucell{background:rgba(0,0,0,.28);border:1px solid var(--glass-border);border-radius:10px;padding:13px 12px;text-align:center}
+.usage-grid .uval{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-.01em}
+.usage-grid .ulab{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+.budget-bar{height:7px;border-radius:6px;background:rgba(0,0,0,.4);overflow:hidden;margin:10px 0 7px}
+.budget-bar .bb-fill{height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease,background .3s}
+.budget-bar .bb-fill.warn{background:linear-gradient(90deg,var(--gold),#ffd27a)}
+.budget-bar .bb-fill.over{background:linear-gradient(90deg,var(--danger),#ff7a8a)}
+#u-budget-state.over{color:var(--danger)}
+#u-budget-state.warn{color:var(--gold)}
+@media(max-width:560px){.usage-grid{grid-template-columns:repeat(2,1fr)}}

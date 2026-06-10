@@ -458,6 +458,33 @@
         </div>
       </section>
 
+      <!-- usage & cost -->
+      <section class="sp-card">
+        <h3>Usage &amp; cost</h3>
+        <p class="sp-desc">Live tally of OpenAI tokens and estimated spend on your key — counted from the actual API responses. Set a monthly budget and Jarvis warns you as you approach it.</p>
+        <div class="usage-grid" id="usage-grid">
+          <div class="ucell"><div class="uval" id="u-cost">$0.00</div><div class="ulab">This month</div></div>
+          <div class="ucell"><div class="uval" id="u-in">0</div><div class="ulab">Input tokens</div></div>
+          <div class="ucell"><div class="uval" id="u-out">0</div><div class="ulab">Output tokens</div></div>
+          <div class="ucell"><div class="uval" id="u-req">0</div><div class="ulab">Requests</div></div>
+        </div>
+        <div class="field">
+          <label>Monthly budget (USD)</label>
+          <div class="row">
+            <input id="set-budget" type="number" min="0" step="1" placeholder="e.g. 20 — 0 = no limit">
+          </div>
+          <div class="budget-bar"><div class="bb-fill" id="bb-fill"></div></div>
+          <div class="hint" id="u-budget-state">No budget set — usage is tracked but not capped.</div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-sub">All-time</div>
+        <div class="hint" id="u-alltime">No usage yet.</div>
+        <div class="field-foot">
+          <span class="field-msg"></span>
+          <button class="btn ghost" id="u-reset">RESET COUNTERS</button>
+        </div>
+      </section>
+
       <!-- computer control -->
       <section class="sp-card">
         <h3>Computer control</h3>

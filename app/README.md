@@ -69,6 +69,15 @@ the mic again to stop. macOS asks for mic permission on first use
 (`NSMicrophoneUsageDescription` is set in `src-tauri/Info.plist`); Windows
 prompts via WebView2.
 
+### Usage & cost
+
+The core emits a `usage` event (real `prompt`/`completion` token counts from
+each OpenAI response, incl. streaming via `stream_options.include_usage`). The
+frontend tallies it per calendar month in `Settings → Usage & cost`: estimated
+spend (priced from an editable per-model table), input/output tokens, request
+count, all-time totals, a **monthly budget** with a progress bar and an
+over-budget warning toast, and a reset button.
+
 ### Computer control (opt-in, spec §17)
 
 Enabled by default — it's a headline feature — but never autonomous.

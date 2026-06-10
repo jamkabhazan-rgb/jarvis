@@ -295,7 +295,7 @@
       if(inp){ inp.disabled=true; inp.placeholder='Available in the desktop app only'; }
     }
   }
-  function openSettings(){ loadSettings(); updateKeyState(); syncSysControl(); renderSysLog(); modal.classList.add('open'); A.SFX.blip(); }
+  function openSettings(){ loadSettings(); updateKeyState(); syncSysControl(); renderSysLog(); renderUsage(); modal.classList.add('open'); A.SFX.blip(); }
   function closeSettings(){ modal.classList.remove('open'); A.SFX.tab(); }
   function flashSaved(){ const s=$('#set-saved'); s.classList.add('show'); setTimeout(()=>s.classList.remove('show'), 2000); }
   function saveSettings(){
@@ -366,6 +366,98 @@
   $('#sys-log-clear')?.addEventListener('click', ()=>{ STORE.save('syslog', []); renderSysLog(); A.SFX.tab(); });
   // the generic switch handler (above) toggles the class first; then we sync
   $('#sys-switch')?.addEventListener('click', ()=> setTimeout(syncSysControl, 0));
+
+  /* ===================== USAGE & COST ===================== */
+  // USD per 1M tokens — edit here if OpenAI pricing changes (gpt-4o-mini).
+  const PRICING = {
+    'gpt-4o-mini':            { in:0.15, out:0.60 },
+    'gpt-4o-mini-transcribe': { in:1.25, out:5.00 },
+    'gpt-4o-mini-tts':        { in:0.60, out:0 },
+    '_default':               { in:0.15, out:0.60 },
+  };
+  const monthKey = ()=> new Date().toISOString().slice(0,7); // YYYY-MM
+  function loadUsage(){ return STORE.load('usage', null) || { months:{}, budget:0, since:Date.now() }; }
+  function priceOf(model){ return PRICING[model] || PRICING._default; }
+  function costOf(bucket){
+    let c=0; for(const [model,e] of Object.entries(bucket||{})){ const p=priceOf(model); c += (e.in||0)/1e6*p.in + (e.out||0)/1e6*p.out; } return c;
+  }
+  function sumBucket(bucket){ let i=0,o=0,r=0; for(const e of Object.values(bucket||{})){ i+=e.in||0; o+=e.out||0; r+=e.req||0; } return {i,o,r}; }
+  function fmtTok(n){ return n>=1e6 ? (n/1e6).toFixed(2)+'M' : n>=1e3 ? (n/1e3).toFixed(1)+'k' : String(n); }
+  function fmtUsd(v){ return '$'+(v<0.01&&v>0 ? v.toFixed(4) : v.toFixed(2)); }
+
+  // accumulate a usage event coming from the core
+  function recordUsage(u){
+    if(!u) return;
+    const data = loadUsage();
+    const mk = monthKey();
+    const m = data.months[mk] || (data.months[mk] = {});
+    const model = u.model || 'gpt-4o-mini';
+    const e = m[model] || (m[model] = { in:0, out:0, req:0 });
+    e.in += u.prompt||0; e.out += u.completion||0; e.req += 1;
+    STORE.save('usage', data);
+    if(modal?.classList.contains('open')) renderUsage();
+    checkBudget(data);
+  }
+  window.JUSAGE = { recordUsage };
+
+  let budgetWarned = false;
+  function checkBudget(data){
+    data = data || loadUsage();
+    if(!data.budget || data.budget<=0) return;
+    const spent = costOf(data.months[monthKey()]);
+    if(spent >= data.budget && !budgetWarned){
+      budgetWarned = true;
+      const t=document.createElement('div'); t.className='update-toast show';
+      t.innerHTML=`<span class="ut-txt">Monthly budget reached — <b>${fmtUsd(spent)}</b> / ${fmtUsd(data.budget)}</span><button class="btn ghost ut-skip">DISMISS</button>`;
+      document.body.appendChild(t);
+      t.querySelector('.ut-skip').addEventListener('click', ()=>t.remove());
+      setTimeout(()=>t.remove(), 12000);
+    }
+    if(spent < data.budget) budgetWarned = false; // re-arm next month / after reset
+  }
+
+  function renderUsage(){
+    const data = loadUsage();
+    const month = data.months[monthKey()] || {};
+    const m = sumBucket(month), cost = costOf(month);
+    const elCost=$('#u-cost'); if(!elCost) return;
+    elCost.textContent = fmtUsd(cost);
+    $('#u-in').textContent  = fmtTok(m.i);
+    $('#u-out').textContent = fmtTok(m.o);
+    $('#u-req').textContent = String(m.r);
+    // budget bar
+    const bInput=$('#set-budget'); if(bInput && document.activeElement!==bInput) bInput.value = data.budget? String(data.budget):'';
+    const fill=$('#bb-fill'), state=$('#u-budget-state');
+    if(data.budget>0){
+      const pct = Math.min(100, cost/data.budget*100);
+      fill.style.width = pct+'%';
+      fill.className = 'bb-fill' + (pct>=100?' over':pct>=80?' warn':'');
+      state.className = 'hint' + (pct>=100?' over':pct>=80?' warn':'');
+      state.textContent = `${fmtUsd(cost)} of ${fmtUsd(data.budget)} this month (${pct.toFixed(0)}%).`;
+    } else {
+      fill.style.width='0%'; fill.className='bb-fill';
+      state.className='hint'; state.textContent='No budget set — usage is tracked but not capped.';
+    }
+    // all-time
+    let ai=0,ao=0,ar=0,ac=0;
+    for(const b of Object.values(data.months)){ const s=sumBucket(b); ai+=s.i;ao+=s.o;ar+=s.r;ac+=costOf(b); }
+    const since = new Date(data.since||Date.now()).toLocaleDateString();
+    $('#u-alltime').textContent = ar ? `${fmtUsd(ac)} · ${fmtTok(ai)} in / ${fmtTok(ao)} out · ${ar} requests since ${since}.` : 'No usage yet.';
+  }
+
+  $('#set-budget')?.addEventListener('change', e=>{
+    const data=loadUsage(); data.budget = Math.max(0, Number(e.target.value)||0); STORE.save('usage', data);
+    budgetWarned=false; renderUsage(); A.SFX.tab();
+  });
+  $('#u-reset')?.addEventListener('click', ()=>{
+    const data=loadUsage(); const keepBudget=data.budget;
+    STORE.save('usage', { months:{}, budget:keepBudget, since:Date.now() });
+    budgetWarned=false; renderUsage(); A.SFX.off();
+  });
+  // listen for usage events from the core (Tauri only)
+  if(window.BRIDGE && window.BRIDGE.inTauri){
+    BRIDGE.listen('usage', u=> recordUsage(u)).catch(()=>{});
+  }
 
   $('#open-settings')?.addEventListener('click', openSettings);
   $('#settings-close')?.addEventListener('click', closeSettings);

@@ -122,7 +122,7 @@ async fn run(
     let tools_arg = if defs.as_array().map(|a| a.is_empty()).unwrap_or(true) { None } else { Some(defs) };
 
     // Round 1: let the model decide whether to call tools.
-    let msg = crate::openai::chat::complete(Value::Array(messages.clone()), tools_arg).await?;
+    let msg = crate::openai::chat::complete(app, Value::Array(messages.clone()), tools_arg).await?;
 
     if let Some(tool_calls) = msg["tool_calls"].as_array() {
         if !tool_calls.is_empty() {
