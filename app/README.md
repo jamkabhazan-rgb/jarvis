@@ -69,6 +69,14 @@ the mic again to stop. macOS asks for mic permission on first use
 (`NSMicrophoneUsageDescription` is set in `src-tauri/Info.plist`); Windows
 prompts via WebView2.
 
+### Releases & updates
+
+Push a version tag (`git tag v0.2.0 && git push origin v0.2.0`) and
+`.github/workflows/release.yml` builds macOS (arm64 + x64) and Windows
+installers into a draft GitHub Release. In-app auto-update is wired up via
+`tauri-plugin-updater` — full step-by-step in
+[`docs/UPDATES.md`](docs/UPDATES.md).
+
 ### Icons
 
 `tauri build` needs icons in `src-tauri/icons/` — they are committed
@@ -86,7 +94,7 @@ square PNG and run `npm run tauri icon path/to/logo.png` to regenerate the set.
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |
 | 6 | **Panels** | Research, mail (connect-gate + drafts-only), finance (CoinKeeper logic), tracker, connectors. | **in progress** — finance/tracker/connectors persisted; research queue interactive + persisted; mail gate persists. Real web-search/Gmail wiring later |
 | 7 | **Agents** | Sub-agent builder + scoped run-chat through the orchestrator. | **working** — run-chat routes through the core on the `agent_*` channel with the agent's prompt + tools restricted to its capabilities; tool calls apply to panels live. (Browser preview keeps the scripted demo.) |
-| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | **in progress** — app icons + bundle config ready (`.app`/`.dmg`, `.msi`/NSIS), metadata + mic Info.plist. Computer-control module + auto-update next |
+| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | **in progress** — app icons + bundle config ready (`.app`/`.dmg`, `.msi`/NSIS), metadata + mic Info.plist; release CI on version tags + update guide (`docs/UPDATES.md`). Computer-control module next |
 
 ### Sprint 1 — what's in this scaffold
 

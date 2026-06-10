@@ -1,0 +1,65 @@
+name: Release (macOS + Windows)
+
+# Builds installers and publishes a draft GitHub Release every time a version
+# tag (v0.2.0, v1.0.0, …) is pushed. See app/docs/UPDATES.md for the flow.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest           # Apple Silicon
+            args: '--target aarch64-apple-darwin'
+          - platform: macos-latest           # Intel Mac
+            args: '--target x86_64-apple-darwin'
+          - platform: windows-latest
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Install frontend deps
+        working-directory: app
+        run: npm install
+
+      - name: Build + publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional — only needed once the auto-updater is enabled
+          # (see app/docs/UPDATES.md, step "Автообновление"):
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: app
+          tagName: ${{ github.ref_name }}
+          releaseName: 'J.A.R.V.I.S. ${{ github.ref_name }}'
+          releaseBody: 'Downloads: macOS — .dmg, Windows — .exe (NSIS) / .msi.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
