@@ -225,3 +225,15 @@
 .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#021018;border:none;font-weight:600;box-shadow:0 0 18px rgba(0,212,255,.3)}
 .btn.ghost{color:var(--text-dim);background:rgba(0,0,0,.25)}
 .btn.ghost:hover{color:var(--text)}
+
+/* ===================== TOPBAR · brightness pass ===================== */
+#topbar.panel{background:rgba(30,44,62,.78);border-color:rgba(130,205,255,.26)}
+#topbar .brand .ver{color:var(--text-dim)}
+.topnav .tab{color:#c9d6e6}
+.topnav .tab .tlabel{opacity:1;color:#d4e0ee}
+.topnav .tab:hover{color:#fff;background:rgba(0,212,255,.10);border-color:rgba(130,205,255,.2)}
+.topnav .tab.active{color:var(--accent);background:rgba(0,212,255,.16);border-color:rgba(130,205,255,.45);box-shadow:0 0 18px rgba(0,212,255,.18),inset 0 0 12px rgba(0,212,255,.08)}
+.topnav .tab.active .tlabel{color:var(--accent)}
+.mode-toggle{background:rgba(12,22,34,.6);border-color:rgba(130,205,255,.22)}
+.mode-toggle button{color:#c9d6e6}
+.icon-btn{color:#c9d6e6;border-color:rgba(130,205,255,.22);background:rgba(22,34,48,.5)}
