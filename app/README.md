@@ -86,7 +86,10 @@ the Rust core and doubles as the kill-switch. The model can only
 *propose* a shell command (`computer_run`) — it renders as a confirmation card
 in chat showing the exact command, and nothing executes until the user clicks
 RUN (`system_execute`, 30s hard timeout, output shown in the card). Every
-run/denial lands in the audit log in Settings. Agents never get this tool.
+run/denial lands in the audit log in Settings (tagged with the agent name when
+an agent issued it). **Agents** can use it too — grant the *Computer / shell*
+capability in the agent builder; their proposed commands render the same
+approval card in the agent run window, still gated by the global toggle.
 
 A **Setup guide** section in Settings walks new users through everything:
 OpenAI key, mic permission, persona, computer control, updates.
@@ -115,7 +118,7 @@ square PNG and run `npm run tauri icon path/to/logo.png` to regenerate the set.
 | 4 | **Skills framework + first tools** | Tool router + events; tasks/boards, goals, reminders against SQLite. ≥8 tools registered, panels re-render live. | **working** — 11 tools: task_add/move/list, board_add, goal_set, habit_log, note_add, vault_search, finance_add_expense, finance_summary, research_query. Mutating tools emit events → panels update live; read tools answer from a per-turn state snapshot. SQLite-in-core later |
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |
 | 6 | **Panels** | Research, mail (connect-gate + drafts-only), finance (CoinKeeper logic), tracker, connectors. | **in progress** — finance/tracker/connectors persisted; research queue interactive + persisted; mail gate persists. Real web-search/Gmail wiring later |
-| 7 | **Agents** | Sub-agent builder + scoped run-chat through the orchestrator. | **working** — run-chat routes through the core on the `agent_*` channel with the agent's prompt + tools restricted to its capabilities; tool calls apply to panels live. (Browser preview keeps the scripted demo.) |
+| 7 | **Agents** | Sub-agent builder + scoped run-chat through the orchestrator. | **working** — run-chat routes through the core on the `agent_*` channel with the agent's prompt + tools restricted to its capabilities; tool calls apply to panels live; per-agent conversation memory; agents with the *Computer / shell* capability can propose shell commands (build/deploy) via the same approval-card + audit-log flow. (Browser preview keeps the scripted demo.) |
 | 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | **working** — computer control shipped: on by default, Settings toggle = kill-switch (synced into the core), `computer_run` tool proposes ONE command, a confirmation card in chat executes it only on the user's RUN click (30s timeout), audit log in Settings. Packaging: icons + bundle config, release CI on version tags + update guide (`docs/UPDATES.md`) |
 
 ### Sprint 1 — what's in this scaffold

@@ -358,7 +358,8 @@
       const row = document.createElement('div'); row.className = 'sys-log-row';
       const cls = e.status==='denied' ? 'deny' : (e.status==='error' || e.timed_out || e.code!==0 ? 'err' : '');
       const label = e.status==='denied' ? 'DENIED' : e.status==='error' ? 'ERROR' : e.timed_out ? 'TIMEOUT' : 'exit '+e.code;
-      row.innerHTML = `<span class="sl-ts">${esc(e.ts||'')}</span><span class="sl-cmd">${esc(e.cmd||'')}</span><span class="sl-code ${cls}">${esc(label)}</span>`;
+      const via = e.via ? `<span class="sl-via">${esc(e.via)}</span>` : '';
+      row.innerHTML = `<span class="sl-ts">${esc(e.ts||'')}</span>${via}<span class="sl-cmd">${esc(e.cmd||'')}</span><span class="sl-code ${cls}">${esc(label)}</span>`;
       root.appendChild(row);
     });
   }

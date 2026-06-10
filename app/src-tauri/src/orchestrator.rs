@@ -55,8 +55,9 @@ fn caps_to_tools(caps: &[String]) -> Vec<String> {
             "finance" => out.extend(["finance_add_expense","finance_summary"].map(String::from)),
             "vault" | "notes" => out.extend(["note_add","vault_search"].map(String::from)),
             "web" => out.push("research_query".into()),
-            // note: computer_run is deliberately NOT mappable to agents — the
-            // approval card UI lives only in the main chat (spec §17)
+            // shell access for agents — still gated by the global toggle and
+            // still requires per-command approval in the agent run view (§17)
+            "system" | "computer" => out.push("computer_run".into()),
             _ => {}
         }
     }

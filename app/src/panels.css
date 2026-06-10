@@ -302,3 +302,4 @@
 #u-budget-state.over{color:var(--danger)}
 #u-budget-state.warn{color:var(--gold)}
 @media(max-width:560px){.usage-grid{grid-template-columns:repeat(2,1fr)}}
+.sys-log-row .sl-via{font-size:9.5px;letter-spacing:.06em;color:var(--accent);background:rgba(0,212,255,.1);border-radius:5px;padding:1px 6px;white-space:nowrap}
