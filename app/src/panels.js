@@ -289,7 +289,11 @@
     if(window.BRIDGE && window.BRIDGE.inTauri){
       try{ const has=await BRIDGE.invoke('has_api_key'); el.textContent = has?'A key is set ✓':'No key set yet'; }
       catch(e){ el.textContent='core unavailable'; }
-    } else { el.textContent='Available only in the desktop app (not in browser preview)'; }
+    } else {
+      el.innerHTML='<b>DESKTOP APP ONLY</b> — key entry is disabled in this browser preview';
+      const inp=$('#set-api-key');
+      if(inp){ inp.disabled=true; inp.placeholder='Available in the desktop app only'; }
+    }
   }
   function openSettings(){ loadSettings(); updateKeyState(); syncSysControl(); renderSysLog(); modal.classList.add('open'); A.SFX.blip(); }
   function closeSettings(){ modal.classList.remove('open'); A.SFX.tab(); }

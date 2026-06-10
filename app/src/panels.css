@@ -266,3 +266,7 @@
 .sys-card .sc-status.ok{color:var(--ok)}
 .sys-card .sc-status.err{color:var(--danger)}
 .sys-card .sc-status.deny{color:var(--gold)}
+
+/* API key field — browser preview is read-only */
+#api-key-state b{color:var(--gold);font-weight:700;letter-spacing:.08em;font-size:10.5px}
+#set-api-key:disabled{opacity:.4;cursor:not-allowed}
