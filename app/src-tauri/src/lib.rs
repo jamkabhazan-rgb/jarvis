@@ -110,8 +110,38 @@ async fn system_execute(command: String) -> Result<serde_json::Value, String> {
     system::execute(command).await
 }
 
+/// Check GitHub Releases for a newer version. Returns the new version string
+/// (e.g. "0.3.0") or null if already up to date.
+#[tauri::command]
+async fn check_for_update(app: AppHandle) -> Result<Option<String>, String> {
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    match updater.check().await.map_err(|e| e.to_string())? {
+        Some(update) => Ok(Some(update.version)),
+        None => Ok(None),
+    }
+}
+
+/// Download + install the pending update (signature-verified against the
+/// embedded public key), then relaunch. Called after the user accepts.
+#[tauri::command]
+async fn install_update(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    if let Some(update) = updater.check().await.map_err(|e| e.to_string())? {
+        update
+            .download_and_install(|_chunk, _total| {}, || {})
+            .await
+            .map_err(|e| e.to_string())?;
+        app.restart();
+    }
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             ping,
             chat_send,
@@ -122,7 +152,9 @@ pub fn run() {
             speak,
             system_set_enabled,
             system_enabled,
-            system_execute
+            system_execute,
+            check_for_update,
+            install_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running J.A.R.V.I.S.");

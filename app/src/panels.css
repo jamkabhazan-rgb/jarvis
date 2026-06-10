@@ -282,3 +282,10 @@
 .mode-toggle{background:rgba(12,22,34,.6);border-color:rgba(130,205,255,.22)}
 .mode-toggle button{color:#c9d6e6}
 .icon-btn{color:#c9d6e6;border-color:rgba(130,205,255,.22);background:rgba(22,34,48,.5)}
+
+/* ===================== UPDATE TOAST ===================== */
+.update-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:rgba(20,30,42,.92);border:1px solid var(--glass-border-hi);box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 24px rgba(0,212,255,.18);backdrop-filter:blur(14px);z-index:9999;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.update-toast.show{transform:translate(-50%,0)}
+.update-toast .ut-txt{font-family:var(--mono);font-size:12px;color:var(--text-dim);letter-spacing:.04em}
+.update-toast .ut-txt b{color:var(--accent)}
+.update-toast .btn{padding:8px 14px;font-size:10.5px}

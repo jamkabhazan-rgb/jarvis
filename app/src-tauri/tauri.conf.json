@@ -25,9 +25,18 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM0NDdFODY1OUYxQkNFN0UKUldSK3podWZaZWhITk1VL212WVluUnJmZUl5djJ6TG5vSnBvZXhIZ2Mydm1UVS9iVm1PQWZJbm8K",
+      "endpoints": [
+        "https://github.com/jamkabhazan-rgb/jarvis/releases/latest/download/latest.json"
+      ]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "category": "Productivity",
     "shortDescription": "Local-first voice AI assistant",
     "longDescription": "J.A.R.V.I.S. — a local-first, cinematic voice AI assistant. The whole AI surface runs on one OpenAI key held only by the local core.",

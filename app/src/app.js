@@ -346,6 +346,29 @@
   // connect to the Rust core (no-op in a plain browser)
   initCore();
 
+  /* ---------- in-app auto-update (Tauri only) ---------- */
+  async function checkUpdates(){
+    if(!(window.BRIDGE && window.BRIDGE.inTauri)) return;
+    try{
+      const version = await BRIDGE.invoke('check_for_update');
+      if(!version) return;
+      const bar = document.createElement('div');
+      bar.className = 'update-toast';
+      bar.innerHTML = `<span class="ut-txt">Update available — <b>v${escapeHtml(String(version))}</b></span>
+        <button class="btn primary ut-go">UPDATE &amp; RESTART</button>
+        <button class="btn ghost ut-skip">LATER</button>`;
+      document.body.appendChild(bar);
+      requestAnimationFrame(()=>bar.classList.add('show'));
+      bar.querySelector('.ut-skip').addEventListener('click', ()=>bar.remove());
+      bar.querySelector('.ut-go').addEventListener('click', async ()=>{
+        const go=bar.querySelector('.ut-go'); go.disabled=true; go.textContent='UPDATING…';
+        try{ await BRIDGE.invoke('install_update'); }
+        catch(e){ go.textContent='UPDATE FAILED'; console.warn('update failed', e); }
+      });
+    }catch(e){ console.warn('update check failed', e); }
+  }
+  setTimeout(checkUpdates, 5000); // after boot, don't block startup
+
   // start the boot sequence
   window.BOOT?.run();
 })();

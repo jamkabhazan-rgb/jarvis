@@ -40,121 +40,83 @@ git push origin v0.2.0
 
 ---
 
-## Уровень 2 — автообновление в приложении
+## Уровень 2 — автообновление в приложении ✅ КОД УЖЕ ВОШИТ
 
 Приложение само проверяет GitHub Releases, скачивает подписанное
-обновление, проверяет подпись и переустанавливает себя. Делается через
-официальный плагин `tauri-plugin-updater`.
+обновление, проверяет подпись встроенным публичным ключом и
+переустанавливается. Через 5 секунд после запуска снизу всплывает тост
+«Update available — vX.Y.Z» с кнопками **UPDATE & RESTART / LATER**.
 
-### Шаг 1. Сгенерируй ключи подписи (один раз, локально)
+**Что уже сделано в репозитории** (трогать не нужно):
+- `Cargo.toml` — плагины `tauri-plugin-updater` + `tauri-plugin-process`
+- `src/lib.rs` — плагины подключены; команды `check_for_update` / `install_update`
+- `tauri.conf.json` — `createUpdaterArtifacts: true` + `plugins.updater` с
+  **вшитым публичным ключом** и эндпоинтом на `releases/latest/.../latest.json`
+- `capabilities/default.json` — разрешения `updater:default`, `process:default`
+- `src/app.js` + `panels.css` — тост проверки обновлений
 
-```bash
-cd app
-npm run tauri signer generate -- -w ~/.tauri/jarvis.key
-```
-
-Команда выведет **публичный ключ** (строка base64) и сохранит **приватный**
-в `~/.tauri/jarvis.key`.
-
-⚠️ **Приватный ключ — никогда не коммитить и не терять.** Если потеряешь,
-уже установленные приложения не примут ни одно будущее обновление
-(пользователям придётся переустанавливать вручную).
-
-### Шаг 2. Добавь секреты в GitHub
-
+**Что осталось сделать тебе — один раз, в GitHub:** добавить два секрета.
 Репозиторий → **Settings → Secrets and variables → Actions → New secret**:
 
 | Секрет | Значение |
 |---|---|
-| `TAURI_SIGNING_PRIVATE_KEY` | содержимое файла `~/.tauri/jarvis.key` |
-| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | пароль, который вводил при генерации (если без пароля — пустая строка) |
+| `TAURI_SIGNING_PRIVATE_KEY` | весь base64-блок приватного ключа (то, что было под «Private:») |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | пароль, который вводил при генерации ключа (если без пароля — оставь пустым) |
 
-Workflow релиза уже передаёт эти секреты в сборку — после этого
-`latest.json` и `.sig`-подписи будут прикладываться к каждому релизу
-автоматически.
+После этого каждый релиз (`git tag vX.Y.Z && git push origin vX.Y.Z`) будет
+собираться с подписанными `latest.json` + `.sig` — и автообновление заработает.
 
-### Шаг 3. Подключи плагины в коде
+> ⚠️ Приватный ключ — **только в Secrets**, никогда в репозиторий. Если
+> потеряешь его, уже установленные приложения перестанут принимать любые
+> будущие обновления (придётся переустанавливать вручную).
 
-**`app/src-tauri/Cargo.toml`** — в `[dependencies]` добавить:
+### Итоговый цикл
 
-```toml
-tauri-plugin-updater = "2"
-tauri-plugin-process = "2"
-```
-
-**`app/src-tauri/src/lib.rs`** — в `pub fn run()` после
-`tauri::Builder::default()` добавить:
-
-```rust
-.plugin(tauri_plugin_updater::Builder::new().build())
-.plugin(tauri_plugin_process::init())
-```
-
-**`app/src-tauri/tauri.conf.json`** — два изменения:
-
-```jsonc
-// 1) в "bundle" добавить:
-"createUpdaterArtifacts": true,
-
-// 2) на верхний уровень (рядом с "bundle") добавить:
-"plugins": {
-  "updater": {
-    "pubkey": "<ПУБЛИЧНЫЙ КЛЮЧ ИЗ ШАГА 1>",
-    "endpoints": [
-      "https://github.com/jamkabhazan-rgb/jarvis/releases/latest/download/latest.json"
-    ]
-  }
-}
-```
-
-**`app/src-tauri/capabilities/default.json`** — в `"permissions"` добавить:
-
-```json
-"updater:default",
-"process:default"
-```
-
-### Шаг 4. Проверка обновлений во фронтенде
-
-Благодаря `withGlobalTauri` плагин доступен как `window.__TAURI__.updater`.
-Добавить в `app/src/app.js` (вызвать один раз после загрузки):
-
-```js
-async function checkUpdates(){
-  try{
-    if(!window.__TAURI__?.updater) return;
-    const update = await window.__TAURI__.updater.check();
-    if(!update) return;
-    // здесь можно показать красивый тост вместо confirm()
-    if(confirm(`Доступна версия ${update.version}. Обновить сейчас?`)){
-      await update.downloadAndInstall();
-      await window.__TAURI__.process.relaunch();
-    }
-  }catch(e){ console.warn('update check failed', e); }
-}
-setTimeout(checkUpdates, 5000); // не мешаем загрузке
-```
-
-### Итоговый цикл после настройки
-
-1. Дорабатываешь фичи → поднимаешь версию → `git tag v0.x.0` → `git push origin v0.x.0`.
-2. CI собирает, подписывает и кладёт в черновик релиза.
-3. Жмёшь **Publish release**.
-4. Все установленные приложения при следующем запуске видят обновление и
-   ставят его сами. Всё.
+1. Дорабатываешь фичи → поднимаешь версию в `tauri.conf.json` и `package.json`.
+2. `git tag vX.Y.Z` → `git push origin vX.Y.Z`.
+3. CI собирает, подписывает и кладёт в **черновик** релиза.
+4. Жмёшь **Publish release** на GitHub.
+5. Все установленные приложения при следующем запуске показывают тост и
+   обновляются по клику. Всё.
 
 ---
 
-## Важно знать (подпись кода ОС — отдельная тема)
+## Уровень 3 — «никаких предупреждений неизвестного разработчика»
 
-Подпись обновлений Tauri (шаги выше) ≠ подпись кода операционной системой:
+**Это НЕ то же самое, что ключи подписи обновлений Tauri (Уровень 2).**
+Ключи minisign подписывают *файл обновления*, чтобы апдейтер убедился, что
+оно не подменено. А предупреждение «приложение от неустановленного
+разработчика / unknown publisher» убирается **сертификатом подписи кода от
+самой ОС** — это отдельный платный документ, удостоверяющий твою личность,
+который выдаёт Apple / удостоверяющий центр. Сгенерировать его локально, как
+ключи Tauri, нельзя.
 
-- **macOS:** без сертификата Apple Developer ID ($99/год) Gatekeeper будет
-  предупреждать при первой установке («приложение от неустановленного
-  разработчика» → открывать через ПКМ → Open). Автообновление при этом
-  работает. С сертификатом + нотаризацией предупреждений нет.
-- **Windows:** без сертификата подписи кода SmartScreen покажет «неизвестный
-  издатель» при первой установке. Дальше всё работает.
+Что нужно реально купить и настроить:
 
-Когда дойдёт до публичной дистрибуции — см. раздел про сертификаты в
-[`API-KEYS.md`](API-KEYS.md).
+### macOS
+1. **Apple Developer Program** — $99/год (apple.com/developer). Нужна
+   проверка личности, занимает 1–2 дня.
+2. Выпустить сертификат **Developer ID Application** (в Xcode или на портале).
+3. Экспортировать его в `.p12`, добавить в GitHub Secrets:
+   - `APPLE_CERTIFICATE` — base64 от `.p12`
+   - `APPLE_CERTIFICATE_PASSWORD` — пароль от `.p12`
+   - `APPLE_SIGNING_IDENTITY` — например `Developer ID Application: Имя (TEAMID)`
+   - `APPLE_ID`, `APPLE_PASSWORD` (app-specific password), `APPLE_TEAM_ID` — для нотаризации
+4. Всё — workflow уже прокидывает эти переменные; на следующем релизе
+   приложение будет подписано и нотаризовано, Gatekeeper промолчит.
+
+### Windows
+1. Купить **сертификат подписи кода** (DigiCert, Sectigo, SSL.com…). OV
+   ~$200–400/год; **EV** дороже, но снимает SmartScreen сразу (у OV
+   репутация нарабатывается со временем).
+2. Добавить в GitHub Secrets:
+   - `WINDOWS_CERTIFICATE` — base64 от `.pfx`
+   - `WINDOWS_CERTIFICATE_PASSWORD` — пароль от `.pfx`
+3. Готово — workflow подпишет установщик.
+
+**До покупки сертификатов** приложение полностью рабочее, и автообновление
+работает. Просто при *первой* установке пользователь увидит предупреждение:
+- macOS: ПКМ по приложению → **Open** → подтвердить (один раз).
+- Windows: SmartScreen → **Подробнее → Выполнить в любом случае** (один раз).
+
+См. также раздел про сертификаты в [`API-KEYS.md`](API-KEYS.md).
