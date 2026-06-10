@@ -220,7 +220,8 @@
       try{
         const r = await BRIDGE.invoke('system_execute', { command: cmd });
         const out = [r.stdout, r.stderr].filter(s=>s && s.trim()).join('\n').trim();
-        if(out){ const pre=document.createElement('div'); pre.className='sc-out'; pre.textContent=out; body.insertBefore(pre, el.querySelector('.sc-actions')); }
+        // insert command output above the action buttons before finish() clears them
+        if(out){ const pre=document.createElement('div'); pre.className='sc-out'; pre.textContent=out; const anchor=body.querySelector('.sc-actions'); body.insertBefore(pre, anchor); }
         const ok = r.code===0 && !r.timed_out;
         finish(ok?'ok':'err', r.timed_out ? '⏱ TIMEOUT — killed after 30s' : (ok ? '✓ exit 0' : '⚠ exit '+r.code));
         logEntry({ ts:now(), cmd, code:r.code, timed_out:!!r.timed_out });
