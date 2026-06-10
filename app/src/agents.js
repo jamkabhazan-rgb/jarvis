@@ -252,11 +252,17 @@
     agentBubble=null;
     try{ window.JTOOLS && window.JTOOLS[tc.name] && window.JTOOLS[tc.name](tc.args||{}); }catch(e){}
   }
+  // per-agent-run conversation memory (resets when a different agent is opened)
+  let agentConvo=[]; const AGENT_CONVO_MAX=16; let agentConvoFor=null;
   async function initAgentCore(){
     if(!(window.BRIDGE && window.BRIDGE.inTauri)) return;
     await BRIDGE.listen('agent_token', agentTok);
     await BRIDGE.listen('agent_tool_call', agentTool);
-    await BRIDGE.listen('agent_done', ()=>{ agentBubble=null; });
+    await BRIDGE.listen('agent_done', ()=>{
+      if(agentReply && agentReply.trim()){ agentConvo.push({role:'assistant', content:agentReply.trim()});
+        while(agentConvo.length>AGENT_CONVO_MAX) agentConvo.shift(); }
+      agentBubble=null;
+    });
   }
 
   function sendRun(){
@@ -267,10 +273,13 @@
     // route through the core when running in the Tauri app
     if(window.BRIDGE && window.BRIDGE.inTauri){
       agentBubble=null; agentReply='';
+      if(agentConvoFor!==a.id){ agentConvo=[]; agentConvoFor=a.id; }  // fresh memory per agent
+      const history=agentConvo.slice();
+      agentConvo.push({role:'user', content:v});
       agentTyping=document.createElement('div'); agentTyping.className='msg j';
       agentTyping.innerHTML=`<div class="av" style="background:${a.color};color:#06080c">${esc(a.glyph)}</div><div class="body"><div class="who">${esc(a.name)}</div><div class="typing"><span></span><span></span><span></span></div></div>`;
       $('#run-stream').appendChild(agentTyping); $('#run-stream').scrollTop=$('#run-stream').scrollHeight;
-      BRIDGE.invoke('agent_send', { text:v, caps:a.caps||[], state:(window.JSTATE?window.JSTATE():null), persona:{ prompt:a.prompt||'', name:'' } })
+      BRIDGE.invoke('agent_send', { text:v, caps:a.caps||[], state:(window.JSTATE?window.JSTATE():null), persona:{ prompt:a.prompt||'', name:'' }, history })
         .catch(err=>{ if(agentTyping){agentTyping.remove();agentTyping=null;} runMsg('a','Core error: '+String(err), true); });
       return;
     }

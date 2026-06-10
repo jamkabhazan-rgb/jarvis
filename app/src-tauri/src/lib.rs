@@ -28,6 +28,7 @@ async fn chat_send(
     mode: String,
     state: Option<serde_json::Value>,
     persona: Option<serde_json::Value>,
+    history: Option<serde_json::Value>,
 ) -> Result<(), String> {
     orchestrator::handle_turn(
         app,
@@ -35,6 +36,7 @@ async fn chat_send(
         mode,
         state.unwrap_or(serde_json::Value::Null),
         persona.unwrap_or(serde_json::Value::Null),
+        history.unwrap_or(serde_json::Value::Null),
     )
     .await;
     Ok(())
@@ -49,6 +51,7 @@ async fn agent_send(
     caps: Vec<String>,
     state: Option<serde_json::Value>,
     persona: Option<serde_json::Value>,
+    history: Option<serde_json::Value>,
 ) -> Result<(), String> {
     orchestrator::handle_agent_turn(
         app,
@@ -56,6 +59,7 @@ async fn agent_send(
         state.unwrap_or(serde_json::Value::Null),
         persona.unwrap_or(serde_json::Value::Null),
         caps,
+        history.unwrap_or(serde_json::Value::Null),
     )
     .await;
     Ok(())

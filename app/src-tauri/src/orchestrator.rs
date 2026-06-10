@@ -29,8 +29,8 @@ fn build_system(persona: &Value) -> String {
 }
 
 /// Main assistant turn — events on the `chat_*` channel, all tools.
-pub async fn handle_turn(app: AppHandle, text: String, _mode: String, state: Value, persona: Value) {
-    if let Err(e) = run(&app, text, &state, &persona, "chat", None).await {
+pub async fn handle_turn(app: AppHandle, text: String, _mode: String, state: Value, persona: Value, history: Value) {
+    if let Err(e) = run(&app, text, &state, &persona, "chat", None, &history).await {
         let _ = app.emit("chat_token", format!("⚠ {}", e));
     }
     let _ = app.emit("chat_done", ());
@@ -38,9 +38,9 @@ pub async fn handle_turn(app: AppHandle, text: String, _mode: String, state: Val
 
 /// Sub-agent turn — events on the `agent_*` channel, tools restricted to the
 /// agent's capabilities (spec §11).
-pub async fn handle_agent_turn(app: AppHandle, text: String, state: Value, persona: Value, caps: Vec<String>) {
+pub async fn handle_agent_turn(app: AppHandle, text: String, state: Value, persona: Value, caps: Vec<String>, history: Value) {
     let allow = caps_to_tools(&caps);
-    if let Err(e) = run(&app, text, &state, &persona, "agent", Some(allow)).await {
+    if let Err(e) = run(&app, text, &state, &persona, "agent", Some(allow), &history).await {
         let _ = app.emit("agent_token", format!("⚠ {}", e));
     }
     let _ = app.emit("agent_done", ());
@@ -87,6 +87,7 @@ async fn run(
     persona: &Value,
     prefix: &str,
     allow: Option<Vec<String>>,
+    history: &Value,
 ) -> Result<(), String> {
     let token_event = format!("{prefix}_token");
     let tool_event = format!("{prefix}_tool_call");
@@ -99,10 +100,18 @@ async fn run(
         sys_prompt.push_str(&format!("\n\n{}", SYSTEM_NOTE));
     }
 
-    let mut messages: Vec<Value> = vec![
-        json!({ "role": "system", "content": sys_prompt }),
-        json!({ "role": "user", "content": text }),
-    ];
+    let mut messages: Vec<Value> = vec![json!({ "role": "system", "content": sys_prompt })];
+    // Prior turns (already trimmed by the frontend) give the model memory.
+    if let Some(turns) = history.as_array() {
+        for t in turns {
+            if let (Some(role), Some(content)) = (t["role"].as_str(), t["content"].as_str()) {
+                if matches!(role, "user" | "assistant") && !content.is_empty() {
+                    messages.push(json!({ "role": role, "content": content }));
+                }
+            }
+        }
+    }
+    messages.push(json!({ "role": "user", "content": text }));
 
     let mut defs = filtered_defs(&allow);
     if !sys_enabled {

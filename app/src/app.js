@@ -111,6 +111,11 @@
 
   /* ---------- core-backed chat (Tauri): stream via events ---------- */
   let coreBubble=null, coreTyping=null, coreReply='', voiceTurn=false, ttsBuf='';
+  // rolling conversation memory sent to the core each turn (capped)
+  const convo=[]; const CONVO_MAX=20;
+  function rememberUser(text){ convo.push({role:'user', content:text}); }
+  function rememberAssistant(text){ if(text && text.trim()) convo.push({role:'assistant', content:text.trim()});
+    while(convo.length>CONVO_MAX) convo.shift(); }
   // push completed sentences to the TTS queue as tokens stream in
   function flushSentences(){
     const re=/[^.!?…\n]*[.!?…\n]+/g; let m, consumed=0;
@@ -126,6 +131,7 @@
       if(voiceTurn){ ttsBuf += tok; flushSentences(); }
     });
     await BRIDGE.listen('chat_done', ()=>{
+      rememberAssistant(coreReply);
       coreBubble=null; coreReply='';
       if(voiceTurn){
         voiceTurn=false;
@@ -238,8 +244,10 @@
   function handleUserCore(text){
     addMsg('u', escapeHtml(text));
     setVoice('thinking','Routing through core…');
+    const history = convo.slice();   // prior turns, before adding this one
+    rememberUser(text);
     coreBubble=null; coreReply=''; ttsBuf=''; coreTyping=typingEl();
-    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat', state: gatherState(), persona: gatherPersona() }).catch(err=>{
+    BRIDGE.invoke('chat_send', { text, mode: live?'voice':'chat', state: gatherState(), persona: gatherPersona(), history }).catch(err=>{
       if(coreTyping){ coreTyping.remove(); coreTyping=null; }
       addMsg('j','Core error: '+escapeHtml(String(err)));
       setVoice(live?'listening':'idle');
