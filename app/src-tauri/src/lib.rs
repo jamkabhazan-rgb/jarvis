@@ -10,6 +10,7 @@ use tauri::AppHandle;
 
 mod openai;
 mod orchestrator;
+mod store;
 mod system;
 mod tools;
 
@@ -17,6 +18,24 @@ mod tools;
 #[tauri::command]
 fn ping() -> String {
     "pong".into()
+}
+
+/// Durable store (SQLite, spec §12). The WebView hydrates its cache from
+/// `store_get_all` at boot, then write-throughs every change via
+/// `store_set` / `store_del`. Values are opaque JSON owned by the frontend.
+#[tauri::command]
+fn store_get_all() -> Result<serde_json::Value, String> {
+    store::get_all().map(serde_json::Value::Object)
+}
+
+#[tauri::command]
+fn store_set(key: String, value: serde_json::Value) -> Result<(), String> {
+    store::set(&key, &value)
+}
+
+#[tauri::command]
+fn store_del(key: String) -> Result<(), String> {
+    store::del(&key)
 }
 
 /// Kick off a dialog turn. The reply is streamed back via the
@@ -143,11 +162,29 @@ async fn install_update(app: AppHandle) -> Result<(), String> {
 }
 
 pub fn run() {
+    use tauri::Manager;
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .setup(|app| {
+            // Open the durable SQLite store under the app data dir. A failure
+            // here is non-fatal: the frontend falls back to its in-memory cache.
+            match app.path().app_data_dir() {
+                Ok(dir) => {
+                    let _ = std::fs::create_dir_all(&dir);
+                    if let Err(e) = store::init(dir.join("jarvis.db")) {
+                        eprintln!("[store] init failed: {e}");
+                    }
+                }
+                Err(e) => eprintln!("[store] no app data dir: {e}"),
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             ping,
+            store_get_all,
+            store_set,
+            store_del,
             chat_send,
             agent_send,
             set_api_key,

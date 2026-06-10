@@ -24,14 +24,11 @@ futures-util = "0.3"
 tokio = { version = "1", features = ["time"] }
 keyring = { version = "3", features = ["apple-native", "windows-native"] }
 base64 = "0.22"
+# Sprint 4: durable data model — key→JSON store in SQLite (bundled, no system dep)
+rusqlite = { version = "0.32", features = ["bundled"] }
 # Sprint 8: in-app auto-update (GitHub Releases, signature-verified)
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
-
-# --- enabled per sprint (kept out until used so the scaffold compiles clean) ---
-# tokio          = { version = "1",    features = ["full"] }                          # provided by tauri runtime
-# sqlx           = { version = "0.8",  features = ["runtime-tokio", "sqlite"] }        # Sprint 4: data model
-# tauri-plugin-sql = { version = "2",  features = ["sqlite"] }                         # Sprint 4
 
 [features]
 # this feature is used to produce a slimmer binary for mobile in the future
