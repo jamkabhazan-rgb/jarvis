@@ -71,8 +71,9 @@ prompts via WebView2.
 
 ### Computer control (opt-in, spec §17)
 
-Off by default. **Settings → Computer control** enables it; the toggle syncs
-straight into the Rust core and doubles as the kill-switch. The model can only
+Enabled by default — it's a headline feature — but never autonomous.
+**Settings → Computer control** is the master toggle; it syncs straight into
+the Rust core and doubles as the kill-switch. The model can only
 *propose* a shell command (`computer_run`) — it renders as a confirmation card
 in chat showing the exact command, and nothing executes until the user clicks
 RUN (`system_execute`, 30s hard timeout, output shown in the card). Every
@@ -106,7 +107,7 @@ square PNG and run `npm run tauri icon path/to/logo.png` to regenerate the set.
 | 5 | **Knowledge vault** | Markdown vault (Obsidian-compatible, YAML frontmatter, `[[wikilinks]]`) + embeddings semantic search. | **in progress** — notes CRUD, full-text search, tag filter, `[[wikilinks]]` + backlink counts (localStorage); markdown-file sync + embeddings next |
 | 6 | **Panels** | Research, mail (connect-gate + drafts-only), finance (CoinKeeper logic), tracker, connectors. | **in progress** — finance/tracker/connectors persisted; research queue interactive + persisted; mail gate persists. Real web-search/Gmail wiring later |
 | 7 | **Agents** | Sub-agent builder + scoped run-chat through the orchestrator. | **working** — run-chat routes through the core on the `agent_*` channel with the agent's prompt + tools restricted to its capabilities; tool calls apply to panels live. (Browser preview keeps the scripted demo.) |
-| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | **working** — computer control shipped: opt-in Settings toggle (= kill-switch, synced into the core), `computer_run` tool proposes ONE command, a confirmation card in chat executes it only on the user's RUN click (30s timeout), audit log in Settings. Packaging: icons + bundle config, release CI on version tags + update guide (`docs/UPDATES.md`) |
+| 8 | **Computer control (opt-in) + packaging** | Permission-gated system module (off by default, audit log, kill-switch) + **macOS + Windows** builds + auto-update. | **working** — computer control shipped: on by default, Settings toggle = kill-switch (synced into the core), `computer_run` tool proposes ONE command, a confirmation card in chat executes it only on the user's RUN click (30s timeout), audit log in Settings. Packaging: icons + bundle config, release CI on version tags + update guide (`docs/UPDATES.md`) |
 
 ### Sprint 1 — what's in this scaffold
 

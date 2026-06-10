@@ -461,8 +461,8 @@
       <!-- computer control -->
       <section class="sp-card">
         <h3>Computer control</h3>
-        <p class="sp-desc">Lets Jarvis act on this computer — open apps and folders, find files, check system info. <b>Off by default.</b> Even when on, every command shows up as a card in chat and runs only after you click RUN. This toggle is also the kill-switch: flip it off and execution stops instantly, everywhere.</p>
-        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Allow Jarvis to run commands</div><div class="tr-s">One command at a time · your approval required for each</div></div><div class="switch" data-toggle="system" id="sys-switch"></div></div>
+        <p class="sp-desc">Lets Jarvis act on this computer — open apps and folders, find files, check system info. <b>Enabled by default</b>, but nothing runs on its own: every command shows up as a card in chat and executes only after you click RUN. This toggle is the kill-switch — flip it off and execution stops instantly, everywhere.</p>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Allow Jarvis to run commands</div><div class="tr-s">One command at a time · your approval required for each</div></div><div class="switch on" data-toggle="system" id="sys-switch"></div></div>
         <div class="field"><div class="hint" id="sys-state">Checking…</div></div>
         <div class="sp-divider"></div>
         <div class="sp-sub">Audit log — every executed command</div>
@@ -491,7 +491,7 @@
             <b>Identity &amp; persona.</b> Set your name and tune the core system prompt in the sections above — it shapes how Jarvis talks in every conversation and for every agent.
           </li>
           <li>
-            <b>Computer control — optional.</b> Flip the toggle above if you want Jarvis to operate this machine. Every command still needs your one-click approval and lands in the audit log.
+            <b>Computer control — on by default.</b> Jarvis can operate this machine, but never silently: every command appears as a card in chat and runs only after you click RUN; everything lands in the audit log. The toggle above turns the whole capability off instantly.
           </li>
           <li>
             <b>Updates.</b> The app checks GitHub Releases for new versions. You can always grab the latest installer from the project's Releases page.

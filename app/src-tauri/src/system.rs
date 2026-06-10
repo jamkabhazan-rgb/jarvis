@@ -1,6 +1,7 @@
 //! Computer control (spec §17) — permission-gated shell execution.
 //!
-//! Off by default. The model can only *propose* a command (the
+//! Enabled by default (a headline feature), but never autonomous: the
+//! Settings toggle is the kill-switch, and the model can only *propose* a command (the
 //! `computer_run` tool); execution happens through the separate
 //! `system_execute` command the frontend invokes after the user clicks
 //! "Run" on the confirmation card. The enabled flag lives in the core, so
@@ -12,7 +13,9 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
-static ENABLED: AtomicBool = AtomicBool::new(false);
+// Default mirrors the Settings toggle's default (on); the frontend re-syncs
+// the persisted value on startup either way.
+static ENABLED: AtomicBool = AtomicBool::new(true);
 
 const TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_OUTPUT: usize = 8000; // chars of stdout/stderr fed back to the UI
