@@ -139,19 +139,38 @@
   }
 
   /* ===================== CONNECTORS ===================== */
+  // Real brand glyphs (Simple Icons, CC0) live in assets/brands/*.svg —
+  // white fill on an official-brand-color tile. Logos remain trademarks of
+  // their owners and identify the third-party services only.
   const SERVICES = [
-    { name:'Google Calendar', mono:'31', color:'#4285F4', desc:'Events · scheduling', linked:true },
-    { name:'Gmail',           mono:'M',  color:'#EA4335', desc:'Read · triage · drafts', linked:false },
-    { name:'Google Drive',    mono:'▲',  color:'#1FA463', desc:'Docs · files', linked:true },
-    { name:'Slack',           mono:'#',  color:'#611f69', desc:'Channels · DMs', linked:true },
-    { name:'Notion',          mono:'N',  color:'#101013', desc:'Pages · databases', linked:true },
-    { name:'GitHub',          mono:'GH', color:'#1f2328', desc:'Repos · issues · PRs', linked:true },
-    { name:'Linear',          mono:'L',  color:'#5E6AD2', desc:'Issues · cycles', linked:false },
-    { name:'Jira',            mono:'J',  color:'#1868DB', desc:'Tickets · sprints', linked:false },
-    { name:'Asana',           mono:'A',  color:'#F06A6A', desc:'Tasks · projects', linked:false },
-    { name:'Stripe',          mono:'S',  color:'#635BFF', desc:'Payments · invoices', linked:false },
-    { name:'Zapier',          mono:'Z',  color:'#FF4F00', desc:'Automation · webhooks', linked:false },
-    { name:'Dropbox',         mono:'D',  color:'#0061FE', desc:'Files · storage', linked:false },
+    { name:'Google Calendar',   icon:'googlecalendar',   color:'#4285F4', desc:'Events · scheduling', linked:true },
+    { name:'Google Drive',      icon:'googledrive',      color:'#1FA463', desc:'Docs · files', linked:true },
+    { name:'Slack',             icon:'slack',            color:'#4A154B', desc:'Channels · DMs', linked:true },
+    { name:'Notion',            icon:'notion',           color:'#101013', desc:'Pages · databases', linked:true },
+    { name:'GitHub',            icon:'github',           color:'#1f2328', desc:'Repos · issues · PRs', linked:true },
+    { name:'Gmail',             icon:'gmail',            color:'#EA4335', desc:'Read · triage · drafts', linked:false },
+    { name:'Microsoft Outlook', icon:'microsoftoutlook', color:'#0078D4', desc:'Mail · calendar', linked:false },
+    { name:'Microsoft Teams',   icon:'microsoftteams',   color:'#6264A7', desc:'Chats · meetings', linked:false },
+    { name:'Linear',            icon:'linear',           color:'#5E6AD2', desc:'Issues · cycles', linked:false },
+    { name:'Jira',              icon:'jira',             color:'#0052CC', desc:'Tickets · sprints', linked:false },
+    { name:'Trello',            icon:'trello',           color:'#0079BF', desc:'Boards · cards', linked:false },
+    { name:'Asana',             icon:'asana',            color:'#F06A6A', desc:'Tasks · projects', linked:false },
+    { name:'Todoist',           icon:'todoist',          color:'#E44332', desc:'Tasks · reminders', linked:false },
+    { name:'Figma',             icon:'figma',            color:'#F24E1E', desc:'Files · comments', linked:false },
+    { name:'Canva',             icon:'canva',            color:'#00C4CC', desc:'Designs · exports', linked:false },
+    { name:'Dropbox',           icon:'dropbox',          color:'#0061FE', desc:'Files · storage', linked:false },
+    { name:'Zoom',              icon:'zoom',             color:'#2D8CFF', desc:'Meetings · recordings', linked:false },
+    { name:'Telegram',          icon:'telegram',         color:'#26A5E4', desc:'Messages · bots', linked:false },
+    { name:'WhatsApp',          icon:'whatsapp',         color:'#25D366', desc:'Messages · groups', linked:false },
+    { name:'Discord',           icon:'discord',          color:'#5865F2', desc:'Servers · channels', linked:false },
+    { name:'Stripe',            icon:'stripe',           color:'#635BFF', desc:'Payments · invoices', linked:false },
+    { name:'PayPal',            icon:'paypal',           color:'#003087', desc:'Balance · transfers', linked:false },
+    { name:'Zapier',            icon:'zapier',           color:'#FF4F00', desc:'Automation · webhooks', linked:false },
+    { name:'HubSpot',           icon:'hubspot',          color:'#FF7A59', desc:'CRM · contacts', linked:false },
+    { name:'Salesforce',        icon:'salesforce',       color:'#00A1E0', desc:'CRM · pipelines', linked:false },
+    { name:'LinkedIn',          icon:'linkedin',         color:'#0A66C2', desc:'Posts · messages', linked:false },
+    { name:'Spotify',           icon:'spotify',          color:'#1DB954', desc:'Playback · playlists', linked:false },
+    { name:'YouTube',           icon:'youtube',          color:'#FF0000', desc:'Videos · analytics', linked:false },
   ];
   // restore saved linked-state, then expose a saver
   (function(){
@@ -166,7 +185,7 @@
     const el = document.createElement('div');
     el.className = 'conn' + (s.linked?' on':'');
     el.innerHTML = `
-      <div class="logo" style="background:${s.color}">${s.mono}</div>
+      <div class="logo" style="background:${s.color}"><img class="brand" src="assets/brands/${s.icon}.svg" alt="${esc(s.name)}" onerror="this.replaceWith(this.alt[0]||'?')"></div>
       <div class="c-info">
         <div class="c-name">${esc(s.name)}</div>
         <div class="c-state ${s.linked?'linked':''}">${s.linked?'● ':''}${esc(s.desc)}</div>
