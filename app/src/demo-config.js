@@ -11,7 +11,7 @@
    demo-config.local.example.js for the shape.
    ============================================================ */
 window.JARVIS_DEMO = {
-  endpoint: "",            // e.g. "https://jarvis-demo.<you>.workers.dev"
+  endpoint: "https://jarvis.jamkabhazan.workers.dev",   // secure proxy — key lives in Cloudflare, not here
   model: "gpt-4o-mini",
   voice: "alloy",
   tts: true,
