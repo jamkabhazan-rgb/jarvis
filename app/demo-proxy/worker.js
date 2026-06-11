@@ -143,7 +143,7 @@ async function session(env, cors) {
         instructions: SYSTEM,
         audio: {
           input: { transcription: { model: "whisper-1" } },
-          output: { voice: "alloy" },
+          output: { voice: "ash" }, // deep, confident male voice
         },
       },
     }),
