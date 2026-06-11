@@ -12,17 +12,22 @@
 
   const USER_NAME = 'Sir';
 
-  /* ---- phase 1: kernel flood ---- */
-  const KERNEL_TOKENS = [
-    'INIT','MOUNT','LINK','EXEC','ALLOC','SYNC','BIND','SPAWN','PATCH','VERIFY',
-    'kernel','core.rs','voice.pipe','orb.gl','tool.router','vault.idx','stt.whisper',
-    'tts.stream','vad.silero','llm.local','permissions','sqlite','events','crypto.kc'
+  /* ---- phase 1: kernel flood (boot commands streaming by) ---- */
+  const COMMANDS = [
+    'cargo build --release', 'spawn agent::orchestrator', 'load model llama-3.x',
+    'mount vault.idx', 'init sqlite store', 'connect openai.stream',
+    'warmup tts.engine', 'calibrate vad.silero', 'register tool.router',
+    'keychain unlock --core', 'index knowledge.base', 'sync tasks.board',
+    'verify update.sig', 'bind voice.pipe', 'compile orb.gl shaders',
+    'route llm.local', 'attach stt.whisper', 'scan permissions',
+    'exec boot.sequence', 'link events.bus', 'alloc memory.pool',
+    'patch runtime --hot', 'probe gpu', 'handshake core.rs',
+    'restore session.cache', 'seed rng', 'tune vad.threshold',
   ];
-  const hex = n => '0x'+Array.from({length:n},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
   function kernelLine(){
-    const tk = KERNEL_TOKENS[Math.floor(Math.random()*KERNEL_TOKENS.length)];
+    const cmd = COMMANDS[Math.floor(Math.random()*COMMANDS.length)];
     const status = Math.random()<0.12 ? '<span class="wr">WAIT</span>' : '<span class="ok">OK</span>';
-    return `<span class="k-line"><span class="hx">${hex(8)}</span>  ${tk.padEnd(14,' ')} ${hex(4)}  ::  ${status}</span>`;
+    return `<span class="k-line"><span class="hx">$</span>  ${cmd.padEnd(26,' ')}  ::  ${status}</span>`;
   }
   async function phaseKernel(){
     const el = $('#kernel');

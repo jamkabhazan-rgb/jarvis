@@ -36,7 +36,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "category": "Productivity",
     "shortDescription": "Local-first voice AI assistant",
     "longDescription": "J.A.R.V.I.S. — a local-first, cinematic voice AI assistant. The whole AI surface runs on one OpenAI key held only by the local core.",
