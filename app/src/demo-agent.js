@@ -20,7 +20,7 @@
   const ENDPOINT = (qs.get('proxy') || CFG.endpoint || '').replace(/\/+$/,'');
   const KEY   = CFG.apiKey || '';
   const MODEL = CFG.model || 'gpt-4o-mini';
-  const RT_MODEL = CFG.realtimeModel || 'gpt-4o-realtime-preview';
+  const RT_MODEL = CFG.realtimeModel || 'gpt-realtime';
   const enabled = ()=> !inTauri() && !!(ENDPOINT || KEY);
 
   const SYSTEM = `You are J.A.R.V.I.S. — a calm, witty, hyper-competent voice AI assistant, talking to a visitor trying you out in a live browser demo. You ARE the product; speak in the first person.
@@ -135,7 +135,8 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
       if(ENDPOINT){
         const r = await fetch(ENDPOINT + '/session', { method:'POST' });
         const j = await r.json().catch(()=> ({}));
-        token = j?.client_secret?.value;
+        // GA returns the ephemeral key at .value; tolerate the older shape too
+        token = j?.value || j?.client_secret?.value;
         if(!token){
           const msg = typeof j?.error === 'string' ? j.error : (j?.error?.message || JSON.stringify(j).slice(0,200));
           throw new Error('session ' + r.status + ': ' + msg);
@@ -160,11 +161,11 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
 
       // 5) SDP offer → OpenAI realtime → answer
       const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
-      const sdpRes = await fetch('https://api.openai.com/v1/realtime?model=' + encodeURIComponent(RT_MODEL), {
+      const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls?model=' + encodeURIComponent(RT_MODEL), {
         method:'POST', body: offer.sdp,
         headers:{ Authorization:'Bearer ' + token, 'Content-Type':'application/sdp' },
       });
-      if(!sdpRes.ok) throw new Error('realtime SDP ' + sdpRes.status);
+      if(!sdpRes.ok) throw new Error('realtime SDP ' + sdpRes.status + ': ' + (await sdpRes.text().catch(()=> '')).slice(0,160));
       await pc.setRemoteDescription({ type:'answer', sdp: await sdpRes.text() });
 
       rt.connecting = false; rt.active = true;

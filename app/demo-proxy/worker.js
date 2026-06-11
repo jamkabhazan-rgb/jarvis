@@ -127,24 +127,25 @@ async function chat(request, env, cors) {
   });
 }
 
-const REALTIME_MODEL = "gpt-4o-mini-realtime-preview";
+const REALTIME_MODEL = "gpt-realtime";
 
-// Mint a short-lived ephemeral Realtime session token. The browser uses this
+// Mint a short-lived ephemeral Realtime token (GA API). The browser uses this
 // (never the real key) to open a WebRTC voice connection straight to OpenAI.
 // The sales persona is baked in here as `instructions`, server-side.
 async function session(env, cors) {
-  const upstream = await fetch("https://api.openai.com/v1/realtime/sessions", {
+  const upstream = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-      "OpenAI-Beta": "realtime=v1",
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
     body: JSON.stringify({
-      model: REALTIME_MODEL,
-      voice: "alloy",
-      instructions: SYSTEM,
-      input_audio_transcription: { model: "whisper-1" },
+      session: {
+        type: "realtime",
+        model: REALTIME_MODEL,
+        instructions: SYSTEM,
+        audio: {
+          input: { transcription: { model: "whisper-1" } },
+          output: { voice: "alloy" },
+        },
+      },
     }),
   });
   const body = await upstream.text();
