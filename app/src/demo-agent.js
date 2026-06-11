@@ -20,7 +20,7 @@
   const ENDPOINT = (qs.get('proxy') || CFG.endpoint || '').replace(/\/+$/,'');
   const KEY   = CFG.apiKey || '';
   const MODEL = CFG.model || 'gpt-4o-mini';
-  const RT_MODEL = CFG.realtimeModel || 'gpt-4o-mini-realtime-preview';
+  const RT_MODEL = CFG.realtimeModel || 'gpt-4o-realtime-preview';
   const enabled = ()=> !inTauri() && !!(ENDPOINT || KEY);
 
   const SYSTEM = `You are J.A.R.V.I.S. — a calm, witty, hyper-competent voice AI assistant, talking to a visitor trying you out in a live browser demo. You ARE the product; speak in the first person.
@@ -103,20 +103,32 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
     userBubbleText:'', asstNode:null, asstText:'',
   };
 
-  function setStatus(mode, sub){ window.UI?.setVoice?.(mode, sub); }
+  // drive the orb's two status lines + the hint under the mic, so the
+  // connect/disconnect state is always unambiguous
+  function vis(label, sub, hint){
+    const l=document.querySelector('#vs-label'), s=document.querySelector('#vs-sub'), h=document.querySelector('#mic-hint');
+    if(l) l.textContent = label; if(s) s.textContent = sub; if(hint!=null && h) h.textContent = hint;
+  }
+  function micLive(on){ document.querySelector('#mic-btn')?.classList.toggle('live', !!on); }
+  // resting state shown on load + after hang-up
+  function idleUI(){ window.ORB?.set?.('idle'); micLive(false); vis('Standby','Tap the mic to start a voice chat','TAP TO START VOICE CHAT'); }
+  if(enabled()) setTimeout(idleUI, 1200);   // after the boot greeting settles
 
   async function startVoice(){
     if(rt.active || rt.connecting) return;
-    if(!ENDPOINT && !KEY){ setStatus('idle','Voice needs the proxy'); return; }
-    rt.connecting = true; setStatus('thinking','Connecting…');
+    if(!ENDPOINT && !KEY){ vis('Standby','Voice needs the proxy','TAP TO START VOICE CHAT'); return; }
+    rt.connecting = true; micLive(true); window.ORB?.set?.('thinking'); vis('Connecting…','Establishing a secure voice link','CONNECTING…');
     try{
       // 1) ephemeral token from the proxy (key stays server-side)
       let token;
       if(ENDPOINT){
         const r = await fetch(ENDPOINT + '/session', { method:'POST' });
-        const j = await r.json();
+        const j = await r.json().catch(()=> ({}));
         token = j?.client_secret?.value;
-        if(!token) throw new Error(j?.error || 'no session token');
+        if(!token){
+          const msg = typeof j?.error === 'string' ? j.error : (j?.error?.message || JSON.stringify(j).slice(0,200));
+          throw new Error('session ' + r.status + ': ' + msg);
+        }
       }else{
         token = KEY; // direct/local fallback
       }
@@ -145,13 +157,13 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
       await pc.setRemoteDescription({ type:'answer', sdp: await sdpRes.text() });
 
       rt.connecting = false; rt.active = true;
-      setStatus('listening','Connected — just talk');
+      window.ORB?.set?.('listening'); vis('Connected','Listening — just talk · tap mic to end','TAP TO HANG UP');
       window.UI?.addMsg?.('j', window.UI?.escapeHtml?.('🎙️ Voice connected — say hello, ask me anything about what I am.'));
     }catch(err){
+      console.error('[demo-agent] voice connect failed:', err);
       rt.connecting = false;
       stopVoice();
-      window.UI?.addMsg?.('j', window.UI?.escapeHtml?.('Voice connection failed: ' + String(err.message||err)));
-      setStatus('idle');
+      window.UI?.addMsg?.('j', window.UI?.escapeHtml?.('Voice connection failed: ' + String(err && err.message || err)));
     }
   }
 
@@ -166,6 +178,7 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
     rt.micAnalyser = rt.outAnalyser = null;
     rt.asstNode = null; rt.asstText = '';
     window.ORB?.amp?.(0.05);
+    idleUI();
   }
 
   // render live transcripts in the chat + drive the orb state
@@ -173,21 +186,21 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
     let m; try{ m = JSON.parse(ev.data); }catch(e){ return; }
     switch(m.type){
       case 'input_audio_buffer.speech_started':
-        setStatus('listening','Listening…'); break;
+        window.ORB?.set?.('listening'); vis('Listening','I hear you…','TAP TO HANG UP'); break;
       case 'conversation.item.input_audio_transcription.completed':
         if(m.transcript && m.transcript.trim()){
           window.UI?.addMsg?.('u', window.UI?.escapeHtml?.(m.transcript.trim()));
           window.UI?.logUser?.(m.transcript.trim());
         }
-        setStatus('thinking','Thinking…'); break;
+        window.ORB?.set?.('thinking'); vis('Thinking','…','TAP TO HANG UP'); break;
       case 'response.audio_transcript.delta':
-        if(!rt.asstNode){ const b = window.UI?.addMsg?.('j',''); rt.asstNode = b?.querySelector('.txt'); rt.asstText=''; setStatus('speaking',''); }
+        if(!rt.asstNode){ const b = window.UI?.addMsg?.('j',''); rt.asstNode = b?.querySelector('.txt'); rt.asstText=''; window.ORB?.set?.('speaking'); vis('Speaking','Jarvis is talking…','TAP TO HANG UP'); }
         rt.asstText += (m.delta||''); if(rt.asstNode){ rt.asstNode.textContent = rt.asstText; window.UI?.scrollBottom?.(); }
         break;
       case 'response.audio_transcript.done':
         if(rt.asstText.trim()) window.UI?.logAssistant?.(rt.asstText.trim());
         rt.asstNode = null; assistantTurns++; maybeOfferReview();
-        if(rt.active) setStatus('listening','Listening…');
+        if(rt.active){ window.ORB?.set?.('listening'); vis('Connected','Listening — just talk · tap mic to end','TAP TO HANG UP'); }
         break;
     }
   }
