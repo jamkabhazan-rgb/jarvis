@@ -2,9 +2,14 @@ name = "jarvis"
 main = "worker.js"
 compatibility_date = "2024-11-01"
 
+# Serve the Jarvis preview UI (app/src) as static assets from this same
+# Worker. Requests that match a file are served directly; everything else
+# (/chat, /tts) falls through to the fetch handler in worker.js. One origin
+# for UI + API → zero CORS.
+[assets]
+directory = "../src"
+
 # Origins allowed to call the proxy. "*" = any (fine for the test demo).
-# Tighten to your exact Pages origin later, e.g.
-# "https://jamkabhazan-rgb.github.io"
 [vars]
 ALLOWED_ORIGINS = "*"
 
