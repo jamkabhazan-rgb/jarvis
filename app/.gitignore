@@ -8,3 +8,6 @@ src-tauri/gen/
 
 # os
 .DS_Store
+
+# local preview demo secrets (never commit a raw API key)
+src/demo-config.local.js

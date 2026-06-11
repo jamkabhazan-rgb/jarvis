@@ -59,6 +59,13 @@
       return;
     }
 
+    // browser preview with the live agent: real Web-Speech mic loop
+    if(window.DEMOAGENT && window.DEMOAGENT.enabled()){
+      if(live){ A.SFX.listen(); window.DEMOAGENT.startVoice(); }
+      else { A.SFX.off(); window.DEMOAGENT.stopVoice(); setVoice('idle'); }
+      return;
+    }
+
     // browser fallback (no core): the original simulated behavior
     if(live){ A.SFX.listen(); setVoice('listening'); }
     else { A.SFX.off(); setVoice('idle'); }
@@ -293,6 +300,8 @@
     if(window.BRIDGE && window.BRIDGE.inTauri) return handleUserCore(text);
     addMsg('u', escapeHtml(text));
     logUser(text);
+    // live preview agent (real OpenAI streaming) takes over when configured
+    if(window.DEMOAGENT && window.DEMOAGENT.enabled()){ A.SFX.think(); return window.DEMOAGENT.reply(text); }
     setVoice('thinking','Parsing intent…');
     A.SFX.think();
     const t = typingEl();
@@ -322,6 +331,9 @@
   }
 
   function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  // UI surface the preview demo-agent renders through (see demo-agent.js)
+  window.UI = { addMsg, typingEl, setVoice, scrollBottom, escapeHtml, logUser, logAssistant, isLive:()=>live };
 
   // composer
   const input = $('#composer-input');

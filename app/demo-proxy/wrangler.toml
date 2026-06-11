@@ -1,0 +1,11 @@
+name = "jarvis-demo"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Lock the proxy to the origins that may call it. Comma-separated, no spaces
+# needed. Use "*" only for quick local testing — never for a public deploy.
+[vars]
+ALLOWED_ORIGINS = "https://jamkabhazan-rgb.github.io,http://localhost:8000,http://127.0.0.1:8000"
+
+# OPENAI_API_KEY is NOT set here — it's a secret, added with:
+#   wrangler secret put OPENAI_API_KEY
