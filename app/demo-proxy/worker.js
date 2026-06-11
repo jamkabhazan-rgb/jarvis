@@ -83,6 +83,7 @@ export default {
     try {
       if (url.pathname === "/chat") return await chat(request, env, cors);
       if (url.pathname === "/tts") return await tts(request, env, cors);
+      if (url.pathname === "/session") return await session(env, cors);
       return json({ error: "not found" }, 404, cors);
     } catch (e) {
       return json({ error: String(e && e.message || e) }, 500, cors);
@@ -123,6 +124,29 @@ async function chat(request, env, cors) {
   // pass the SSE stream straight through
   return new Response(upstream.body, {
     headers: { ...cors, "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache" },
+  });
+}
+
+const REALTIME_MODEL = "gpt-4o-mini-realtime-preview";
+
+// Mint a short-lived ephemeral Realtime session token. The browser uses this
+// (never the real key) to open a WebRTC voice connection straight to OpenAI.
+// The sales persona is baked in here as `instructions`, server-side.
+async function session(env, cors) {
+  const upstream = await fetch("https://api.openai.com/v1/realtime/sessions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      model: REALTIME_MODEL,
+      voice: "alloy",
+      instructions: SYSTEM,
+      input_audio_transcription: { model: "whisper-1" },
+    }),
+  });
+  const body = await upstream.text();
+  return new Response(body, {
+    status: upstream.status,
+    headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
