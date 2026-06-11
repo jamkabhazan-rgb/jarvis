@@ -143,11 +143,12 @@
   // white fill on an official-brand-color tile. Logos remain trademarks of
   // their owners and identify the third-party services only.
   const SERVICES = [
-    { name:'Google Calendar',   icon:'googlecalendar',   color:'#4285F4', desc:'Events · scheduling', linked:true },
-    { name:'Google Drive',      icon:'googledrive',      color:'#1FA463', desc:'Docs · files', linked:true },
-    { name:'Slack',             icon:'slack',            color:'#4A154B', desc:'Channels · DMs', linked:true },
-    { name:'Notion',            icon:'notion',           color:'#101013', desc:'Pages · databases', linked:true },
-    { name:'GitHub',            icon:'github',           color:'#1f2328', desc:'Repos · issues · PRs', linked:true },
+    { name:'Claude Code',       icon:'claudecode',       color:'#D97757', desc:'Agents · code · automation', linked:false },
+    { name:'Google Calendar',   icon:'googlecalendar',   color:'#4285F4', desc:'Events · scheduling', linked:false },
+    { name:'Google Drive',      icon:'googledrive',      color:'#1FA463', desc:'Docs · files', linked:false },
+    { name:'Slack',             icon:'slack',            color:'#4A154B', desc:'Channels · DMs', linked:false },
+    { name:'Notion',            icon:'notion',           color:'#101013', desc:'Pages · databases', linked:false },
+    { name:'GitHub',            icon:'github',           color:'#1f2328', desc:'Repos · issues · PRs', linked:false },
     { name:'Gmail',             icon:'gmail',            color:'#EA4335', desc:'Read · triage · drafts', linked:false },
     { name:'Microsoft Outlook', icon:'microsoftoutlook', color:'#0078D4', desc:'Mail · calendar', linked:false },
     { name:'Microsoft Teams',   icon:'microsoftteams',   color:'#6264A7', desc:'Chats · meetings', linked:false },

@@ -58,8 +58,8 @@ jobs:
           # No code-signing certs yet: macOS bundles ad-hoc, Windows unsigned.
         with:
           projectPath: app
-          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.1.0' }}
-          releaseName: ${{ github.ref_type == 'tag' && github.ref_name || 'J.A.R.V.I.S. v0.1.0' }}
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.2.0' }}
+          releaseName: ${{ github.ref_type == 'tag' && github.ref_name || 'J.A.R.V.I.S. v0.2.0' }}
           releaseBody: 'Downloads: macOS — .dmg, Windows — .exe (NSIS) / .msi.'
           releaseDraft: false
           prerelease: false
