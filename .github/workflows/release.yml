@@ -51,10 +51,11 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # No code-signing secrets: macOS bundles ad-hoc signed, Windows
-          # unsigned. (Passing empty APPLE_CERTIFICATE made the bundler try to
-          # import an invalid cert and fail.) Add signing later when you have
-          # an Apple Developer account / Windows cert.
+          # Updater signing (minisign) — REQUIRED secret so each release ships
+          # latest.json + .sig and the in-app "Update & Restart" button works.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # No code-signing certs yet: macOS bundles ad-hoc, Windows unsigned.
         with:
           projectPath: app
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.1.0' }}
