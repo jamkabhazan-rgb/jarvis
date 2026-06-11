@@ -52,6 +52,9 @@
   .copy{margin-left:auto;flex:0 0 auto;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
     color:var(--dim);background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;transition:.18s}
   .copy:hover{color:var(--text);border-color:var(--border-hi)}
+  .intel{display:block;margin-top:10px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);text-decoration:none}
+  .intel:hover{color:var(--text)}
+  .dlstatus{text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:#ffd27a;margin:22px auto 0;max-width:620px;min-height:16px}
   .note{text-align:center;color:var(--muted);font-size:13px;line-height:1.6;margin:34px auto 0;max-width:620px}
   .safe{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:38px 0 0;color:var(--dim);font-size:13px}
   .safe div{display:flex;align-items:center;gap:8px}
@@ -94,6 +97,7 @@
       </div>
       <div class="meta">macOS 11+ · Apple Silicon &amp; Intel · .dmg</div>
       <a class="dl" id="dl-mac" href="https://github.com/jamkabhazan-rgb/jarvis/releases/latest" target="_blank" rel="noopener">Download for macOS</a>
+      <a class="intel" id="dl-mac-intel" href="#" hidden>Intel Mac →</a>
     </div>
   </div>
 
@@ -105,6 +109,8 @@
       <button class="copy" id="copy-cmd">COPY</button>
     </div>
   </div>
+
+  <div class="dlstatus" id="dlstatus"></div>
 
   <div class="safe">
     <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V6z"/></svg>Data stays on your device</div>
@@ -118,17 +124,54 @@
 </div>
 
 <script>
-  // OS detection: surface the most relevant button first
-  (function(){
-    const p = (navigator.platform || '') + ' ' + (navigator.userAgent || '');
-    const isMac = /Mac|iPhone|iPad/i.test(p);
-    if(isMac){ const c=document.querySelector('.cards'); const mac=document.getElementById('dl-mac')?.closest('.card'); if(c&&mac) c.prepend(mac); }
-  })();
+  const REPO = 'jamkabhazan-rgb/jarvis';
+  const RELEASES = 'https://github.com/' + REPO + '/releases/latest';
+
+  // OS detection: surface the most relevant card first
+  const ua = (navigator.platform || '') + ' ' + (navigator.userAgent || '');
+  const isMac = /Mac|iPhone|iPad/i.test(ua);
+  if(isMac){ const c=document.querySelector('.cards'); const mac=document.getElementById('dl-mac')?.closest('.card'); if(c&&mac) c.prepend(mac); }
+
   // copy the terminal command
   document.getElementById('copy-cmd')?.addEventListener('click', async ()=>{
     const t = document.getElementById('cmd-text').textContent;
     try{ await navigator.clipboard.writeText(t); const b=document.getElementById('copy-cmd'); b.textContent='COPIED'; setTimeout(()=>b.textContent='COPY',1500); }catch(e){}
   });
+
+  // Wire the buttons to DIRECT file links from the latest GitHub release, so
+  // one click downloads the installer (no intermediate page). Robust to the
+  // version embedded in filenames — we read the actual asset URLs at runtime.
+  (function(){
+    const win = document.getElementById('dl-win');
+    const mac = document.getElementById('dl-mac');
+    const macIntel = document.getElementById('dl-mac-intel');
+    const status = document.getElementById('dlstatus');
+    const pick = (assets, re)=> (assets.find(a=> re.test(a.name)) || {}).browser_download_url;
+
+    fetch('https://api.github.com/repos/' + REPO + '/releases/latest', { headers:{ Accept:'application/vnd.github+json' } })
+      .then(r=> r.ok ? r.json() : Promise.reject(r.status))
+      .then(rel=>{
+        const a = rel.assets || [];
+        const macArm = pick(a, /(aarch64|arm64|universal).*\.dmg$/i) || pick(a, /\.dmg$/i);
+        const macX64 = pick(a, /(x64|x86_64|intel).*\.dmg$/i);
+        const winUrl = pick(a, /(setup)?\.exe$/i) || pick(a, /\.msi$/i);
+
+        if(macArm){ mac.href = macArm; mac.removeAttribute('target'); mac.setAttribute('download',''); }
+        if(macX64 && macX64 !== macArm){ macIntel.href = macX64; macIntel.hidden = false; macIntel.setAttribute('download',''); }
+        if(winUrl){ win.href = winUrl; win.removeAttribute('target'); win.setAttribute('download',''); }
+
+        if(!macArm && !winUrl){
+          status.textContent = 'Build published, but no installer assets found yet — opening the releases page instead.';
+        }else{
+          status.textContent = 'Latest: ' + (rel.tag_name || '') + ' — click downloads the file directly.';
+          status.style.color = 'var(--dim)';
+        }
+      })
+      .catch(()=>{
+        // no published release yet → buttons fall back to the releases page
+        status.textContent = 'Installers are building — not published yet. The buttons open the releases page; check back in a few minutes.';
+      });
+  })();
 </script>
 </body>
 </html>
