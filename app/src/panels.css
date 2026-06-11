@@ -374,3 +374,10 @@
 .connect-btn.live{color:#ff6b7f;border-color:rgba(255,107,127,.55);background:rgba(255,107,127,.10)}
 .connect-btn.live:hover{background:rgba(255,107,127,.18)}
 @keyframes cbpulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ===================== DOWNLOAD button (topbar) ===================== */
+.download-btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;cursor:pointer;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;font-weight:600;color:#001018;
+  background:var(--accent);border-radius:9px;padding:9px 15px;margin-right:12px;transition:var(--transition);
+  box-shadow:0 0 18px rgba(0,212,255,.25)}
+.download-btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 0 26px rgba(0,212,255,.4)}
