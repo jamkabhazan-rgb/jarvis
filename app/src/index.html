@@ -630,32 +630,27 @@
 <script src="bridge.js"></script>
 <script src="store.js"></script>
 <!-- preview demo-agent config (committed file holds NO secrets) -->
-<script src="demo-config.js"></script>
 <script>
   /* Hydrate the durable store (SQLite via core, or localStorage in a browser)
      BEFORE the app modules run, so every STORE.load() at module-init time sees
-     persisted data. Modules are then loaded in order to preserve dependencies. */
+     persisted data. Modules are then loaded in order to preserve dependencies.
+     A per-load cache-buster guarantees the freshest JS after every deploy. */
   (function(){
-    const mods = ['voice.js','app.js','panels.js','finance.js','agents.js','vault.js','research.js','demo-agent.js'];
-    function loadSeq(i){
-      if(i >= mods.length) return;
-      const s = document.createElement('script');
-      s.src = mods[i];
-      s.onload = s.onerror = ()=> loadSeq(i + 1);
-      document.body.appendChild(s);
-    }
-    // optional local override with a raw key (gitignored); ignore if absent
-    function loadLocalConfig(){
+    const V = '?v=' + Date.now();
+    function inject(src, parent){
       return new Promise(res=>{
         const s = document.createElement('script');
-        s.src = 'demo-config.local.js';
-        s.onload = s.onerror = ()=> res();
-        document.head.appendChild(s);
+        s.src = src + V; s.onload = s.onerror = ()=> res();
+        (parent || document.body).appendChild(s);
       });
     }
-    loadLocalConfig()
+    const mods = ['voice.js','app.js','panels.js','finance.js','agents.js','vault.js','research.js','demo-agent.js'];
+    async function loadSeq(){ for(const m of mods) await inject(m); }
+    // config first (committed endpoint), then optional local key override (gitignored)
+    inject('demo-config.js', document.head)
+      .then(()=> inject('demo-config.local.js', document.head))
       .then(()=> Promise.resolve(window.STORE && window.STORE.hydrate && window.STORE.hydrate()).catch(()=>{}))
-      .finally(()=> loadSeq(0));
+      .finally(loadSeq);
   })();
 </script>
 </body>
