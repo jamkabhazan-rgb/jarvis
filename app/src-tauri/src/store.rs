@@ -102,3 +102,36 @@ pub fn del(key: &str) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    // One test fn on purpose: the store is a process-wide singleton
+    // (OnceLock), so a single sequential scenario exercises everything.
+    #[test]
+    fn roundtrip() {
+        let path = std::env::temp_dir().join(format!("jarvis-store-test-{}.db", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        init(path.clone()).unwrap();
+        assert!(init(path.clone()).is_err()); // second init refused
+
+        assert!(get_all().unwrap().is_empty());
+        set("a", &json!({ "x": 1 })).unwrap();
+        set("a", &json!([1, 2, 3])).unwrap(); // upsert replaces
+        set("b", &json!("hi")).unwrap();
+        set("unicode", &json!("привет — ёжик 🦔")).unwrap();
+        del("missing").unwrap(); // absent key is not an error
+
+        let all = get_all().unwrap();
+        assert_eq!(all["a"], json!([1, 2, 3]));
+        assert_eq!(all["b"], json!("hi"));
+        assert_eq!(all["unicode"], json!("привет — ёжик 🦔"));
+
+        del("b").unwrap();
+        assert!(!get_all().unwrap().contains_key("b"));
+
+        let _ = std::fs::remove_file(&path);
+    }
+}

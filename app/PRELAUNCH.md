@@ -1,15 +1,17 @@
 # Pre-launch checklist
 
 Things to verify on a real machine before the first run is considered "green".
-The CI container here can't build Tauri (no GTK system libs on Linux), so the
-items below must be confirmed on macOS / Windows (or a Linux box with GTK).
 
-## Build
+## Build — ✅ verified in CI-like Linux env (GTK installed)
 
-- [ ] `cd app/src-tauri && cargo build` succeeds — confirms the bundled
-      `rusqlite` (SQLite compiled from source) builds. Needs a C compiler
-      (clang/MSVC), which every Tauri toolchain already has.
-- [ ] `cargo clippy --all-targets` is clean (warnings are fine, no errors).
+- [x] `cd app/src-tauri && cargo check` and full `cargo build` succeed —
+      bundled `rusqlite` compiles, binary links.
+- [x] `cargo clippy` is clean (zero warnings).
+- [x] `cargo test --lib` passes (store roundtrip: init/upsert/delete/unicode).
+- [x] Headless smoke run (Xvfb): app starts, creates
+      `<app_data_dir>/jarvis.db` with WAL mode active, runs without crashing.
+
+Still re-confirm on the actual target OS (macOS / Windows):
 
 ## Durable store (SQLite)
 
