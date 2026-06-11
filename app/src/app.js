@@ -446,15 +446,26 @@
 
   /* ---------- ready hook from boot ---------- */
   window.APP = {
-    onReady(){
+    async onReady(){
       setVoice('idle');
+      // In the installed app, check for an OpenAI key — without it nothing works.
+      let needsKey = false;
+      if(window.BRIDGE && window.BRIDGE.inTauri){
+        try{ needsKey = !(await BRIDGE.invoke('has_api_key')); }catch(e){}
+      }
       // jarvis greets after reveal
       setTimeout(()=>{
         const e = addMsg('j','');
-        const say = 'Systems online. Voice pipeline ready — speech, reasoning and synthesis all green. How can I help, Sir?';
+        const say = needsKey
+          ? 'Welcome. To bring me online I need your OpenAI API key. Open Settings — the gear at the top-right — and paste your key there. Everything I do runs on that one key, and it’s stored only in your device’s keychain: it never leaves your machine. Once it’s in, just talk to me.'
+          : 'Systems online. Voice pipeline ready — speech, reasoning and synthesis all green. How can I help, Sir?';
         const txt=e.querySelector('.txt'); let i=0;
         setVoice('speaking',''); A.SFX.speak();
-        const iv=setInterval(()=>{ txt.textContent=say.slice(0,++i); scrollBottom(); if(i>=say.length){clearInterval(iv); setVoice('idle');} },16);
+        const iv=setInterval(()=>{ txt.textContent=say.slice(0,++i); scrollBottom(); if(i>=say.length){
+          clearInterval(iv); setVoice('idle');
+          // nudge the user straight to the key field on first run
+          if(needsKey) setTimeout(()=> $('#open-settings')?.click(), 400);
+        } },16);
       }, 600);
     }
   };
