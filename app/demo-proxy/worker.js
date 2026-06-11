@@ -135,7 +135,11 @@ const REALTIME_MODEL = "gpt-4o-mini-realtime-preview";
 async function session(env, cors) {
   const upstream = await fetch("https://api.openai.com/v1/realtime/sessions", {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      "OpenAI-Beta": "realtime=v1",
+    },
     body: JSON.stringify({
       model: REALTIME_MODEL,
       voice: "alloy",

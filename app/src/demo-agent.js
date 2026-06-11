@@ -110,14 +110,25 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
     if(l) l.textContent = label; if(s) s.textContent = sub; if(hint!=null && h) h.textContent = hint;
   }
   function micLive(on){ document.querySelector('#mic-btn')?.classList.toggle('live', !!on); }
+  // the explicit Connect/Disconnect button
+  function setBtn(label, state){
+    const b = document.querySelector('#connect-btn'); if(!b) return;
+    b.hidden = false; b.textContent = label;
+    b.classList.toggle('live', state==='live');
+    b.classList.toggle('busy', state==='busy');
+  }
   // resting state shown on load + after hang-up
-  function idleUI(){ window.ORB?.set?.('idle'); micLive(false); vis('Standby','Tap the mic to start a voice chat','TAP TO START VOICE CHAT'); }
-  if(enabled()) setTimeout(idleUI, 1200);   // after the boot greeting settles
+  function idleUI(){
+    window.ORB?.set?.('idle'); micLive(false);
+    vis('Disconnected','Press Connect to talk to Jarvis', null);
+    setBtn('● CONNECT', 'idle');
+  }
 
   async function startVoice(){
     if(rt.active || rt.connecting) return;
-    if(!ENDPOINT && !KEY){ vis('Standby','Voice needs the proxy','TAP TO START VOICE CHAT'); return; }
-    rt.connecting = true; micLive(true); window.ORB?.set?.('thinking'); vis('Connecting…','Establishing a secure voice link','CONNECTING…');
+    if(!ENDPOINT && !KEY){ vis('Disconnected','Voice needs the proxy', null); return; }
+    rt.connecting = true; micLive(true); window.ORB?.set?.('thinking');
+    vis('Connecting…','Establishing a secure voice link', null); setBtn('CONNECTING…','busy');
     try{
       // 1) ephemeral token from the proxy (key stays server-side)
       let token;
@@ -157,7 +168,7 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
       await pc.setRemoteDescription({ type:'answer', sdp: await sdpRes.text() });
 
       rt.connecting = false; rt.active = true;
-      window.ORB?.set?.('listening'); vis('Connected','Listening — just talk · tap mic to end','TAP TO HANG UP');
+      window.ORB?.set?.('listening'); vis('Connected','Speak — Jarvis is listening', null); setBtn('■ DISCONNECT','live');
       window.UI?.addMsg?.('j', window.UI?.escapeHtml?.('🎙️ Voice connected — say hello, ask me anything about what I am.'));
     }catch(err){
       console.error('[demo-agent] voice connect failed:', err);
@@ -231,5 +242,22 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
     get voiceActive(){ return rt.active; },
     get mode(){ return ENDPOINT ? 'proxy' : (KEY ? 'direct' : 'off'); },
   };
-  if(enabled()) console.info('[demo-agent] live ·', window.DEMOAGENT.mode, '· text:', MODEL, '· voice:', RT_MODEL);
+
+  // Set up the explicit Connect/Disconnect widget once the app is revealed.
+  function initWidget(){
+    const btn = document.querySelector('#connect-btn');
+    const hint = document.querySelector('#mic-hint');
+    if(hint) hint.style.display = 'none';        // drop the misleading "Hey Jarvis" hint
+    if(btn){
+      btn.hidden = false;
+      btn.addEventListener('click', ()=> (rt.active || rt.connecting) ? stopVoice() : startVoice());
+    }
+    // tapping the mic icon does the same thing
+    idleUI();
+  }
+  if(enabled()){
+    console.info('[demo-agent] live ·', window.DEMOAGENT.mode, '· text:', MODEL, '· voice:', RT_MODEL);
+    // run after the cinematic boot greeting settles so it isn't overwritten
+    setTimeout(initWidget, 2600);
+  }
 })();

@@ -1,0 +1,4 @@
+# Always revalidate so a new deploy reaches browsers immediately (the demo
+# is small; correctness over caching). JS modules also carry a ?v= buster.
+/*
+  Cache-Control: no-cache

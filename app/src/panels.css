@@ -364,3 +364,13 @@
   color:#001018;background:var(--accent);border:none;border-radius:9px;padding:9px 16px;transition:var(--transition)}
 .demo-x:hover{filter:brightness(1.12);transform:translateY(-1px)}
 @keyframes cta-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ===================== PREVIEW — Connect/Disconnect button ===================== */
+.connect-btn{margin-top:14px;cursor:pointer;font-family:var(--mono);font-size:13px;letter-spacing:.12em;font-weight:600;
+  color:var(--accent);background:rgba(0,212,255,.08);border:1px solid var(--glass-border-hi);border-radius:24px;
+  padding:12px 26px;transition:var(--transition)}
+.connect-btn:hover{background:rgba(0,212,255,.16);transform:translateY(-1px)}
+.connect-btn.busy{color:#ffd27a;border-color:rgba(255,210,122,.5);background:rgba(255,210,122,.08);animation:cbpulse 1s ease-in-out infinite}
+.connect-btn.live{color:#ff6b7f;border-color:rgba(255,107,127,.55);background:rgba(255,107,127,.10)}
+.connect-btn.live:hover{background:rgba(255,107,127,.18)}
+@keyframes cbpulse{0%,100%{opacity:1}50%{opacity:.55}}
