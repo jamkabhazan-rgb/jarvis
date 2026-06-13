@@ -7,12 +7,12 @@
   const $ = s => document.querySelector(s);
   const DAYS_LEFT = 14;
 
-  const ACCOUNTS = [
+  const DEFAULT_ACCOUNTS = [
     { id:'card', name:'Main Card', balance:8450, color:'#00d4ff' },
     { id:'cash', name:'Cash',      balance:1200, color:'#41e0a3' },
     { id:'save', name:'Savings',   balance:21000, color:'#ffb347' },
   ];
-  const CATS = [
+  const DEFAULT_CATS = [
     { id:'workshop',  name:'Workshop',  budget:3000, spent:1840, color:'#00d4ff', glyph:'W' },
     { id:'food',      name:'Food',      budget:800,  spent:512,  color:'#ff8a5b', glyph:'F' },
     { id:'home',      name:'Home',      budget:1200, spent:640,  color:'#ffb347', glyph:'H' },
@@ -20,13 +20,18 @@
     { id:'leisure',   name:'Leisure',   budget:500,  spent:470,  color:'#c98bff', glyph:'L' },
     { id:'health',    name:'Health',    budget:400,  spent:120,  color:'#ff5b8a', glyph:'+' },
   ];
-  let TXNS = [
+  const DEFAULT_TXNS = [
     { id:1, kind:'expense', cat:'workshop', acct:'card', amount:1840, label:'Tungsten lot', date:'Jun 06' },
     { id:2, kind:'income',  cat:null,       acct:'card', amount:6050, label:'Licensing royalty — clean energy patent', date:'Jun 04' },
     { id:3, kind:'expense', cat:'food',     acct:'cash', amount:64,   label:'Lunch — Stark Tower café', date:'Jun 03' },
     { id:4, kind:'expense', cat:'leisure',  acct:'card', amount:120,  label:'Concert tickets', date:'Jun 02' },
   ];
-  let tid = 50;
+  const fp = STORE.load('finance', null);
+  let ACCOUNTS = (fp && fp.accounts) || DEFAULT_ACCOUNTS;
+  let CATS     = (fp && fp.cats)     || DEFAULT_CATS;
+  let TXNS     = (fp && fp.txns)     || DEFAULT_TXNS;
+  let tid      = (fp && fp.tid)      || 50;
+  function saveFinance(){ STORE.save('finance', { accounts:ACCOUNTS, cats:CATS, txns:TXNS, tid }); }
 
   const fmt = n => (n<0?'-':'') + '$' + Math.abs(Math.round(n)).toLocaleString('en-US');
   const acct = id => ACCOUNTS.find(a=>a.id===id);
@@ -49,7 +54,7 @@
     const spent  = CATS.reduce((s,c)=>s+c.spent,0);
     const left   = budget - spent;
     const safe   = Math.max(0, left/DAYS_LEFT);
-    const pct    = Math.min(100, spent/budget*100);
+    const pct    = budget > 0 ? Math.min(100, spent/budget*100) : 0;
     const box = $('#fin-summary'); box.innerHTML='';
     box.innerHTML = `
       <div class="safe">
@@ -102,13 +107,13 @@
     const c=cat(catId), a=acct(acctId); if(!c||!a) return;
     c.spent+=amount; a.balance-=amount;
     const id=++tid; TXNS.push({id, kind:'expense', cat:catId, acct:acctId, amount, label:label||c.name, date:todayLabel()});
-    A.SFX.blip(); renderAll(id);
+    saveFinance(); A.SFX.blip(); renderAll(id);
   }
   function addIncome(acctId, amount, label){
     const a=acct(acctId); if(!a) return;
     a.balance+=amount;
     const id=++tid; TXNS.push({id, kind:'income', cat:null, acct:acctId, amount, label:label||'Income', date:todayLabel()});
-    A.SFX.listen(); renderAll(id);
+    saveFinance(); A.SFX.listen(); renderAll(id);
   }
 
   /* ---------- quick entry ---------- */
@@ -162,6 +167,14 @@
   }
 
   function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  // tool-call handler (core → panel): record an expense
+  window.JTOOLS = window.JTOOLS || {};
+  window.JTOOLS.finance_add_expense = (a)=>{
+    const q = String(a.category||'').toLowerCase();
+    const c = CATS.find(x=>x.id===q) || CATS.find(x=>x.name.toLowerCase()===q) || CATS[0];
+    addExpense(c.id, 'card', Number(a.amount)||0, a.label||'');
+  };
 
   // wire top buttons (exist in DOM)
   document.addEventListener('DOMContentLoaded', init);

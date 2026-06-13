@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Download J.A.R.V.I.S.</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+  :root{
+    --bg:#03070d; --bg2:#060c16; --accent:#00d4ff; --text:#dce8f5; --dim:#7d93ab; --muted:#4d6175;
+    --border:rgba(120,180,230,.14); --border-hi:rgba(0,212,255,.45);
+    --mono:ui-monospace,"SF Mono",Menlo,monospace; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{background:radial-gradient(1200px 700px at 50% -10%,#0a1626 0%,var(--bg) 60%);color:var(--text);
+    font-family:var(--font);-webkit-font-smoothing:antialiased;padding:0 20px 80px}
+  a{color:inherit}
+  .wrap{max-width:920px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;padding:26px 4px}
+  .brand{font-family:var(--mono);letter-spacing:.35em;font-weight:700;font-size:15px}
+  .brand b{color:var(--accent)}
+  .back{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--dim);text-decoration:none}
+  .back:hover{color:var(--text)}
+  .hero{text-align:center;padding:46px 0 26px}
+  .hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 14px;letter-spacing:-.02em}
+  .hero h1 .g{background:linear-gradient(90deg,#7fe9ff,#00d4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--dim);font-size:17px;max-width:560px;margin:0 auto;line-height:1.55}
+  .badges{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:22px 0 0;font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.08em}
+  .badges span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:40px 0 26px}
+  @media(max-width:680px){.cards{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--bg2),#040a12);border:1px solid var(--border);border-radius:18px;
+    padding:30px 26px;display:flex;flex-direction:column;align-items:flex-start;transition:.2s}
+  .card:hover{border-color:var(--border-hi);transform:translateY(-3px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .card .os{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .card .os svg{width:30px;height:30px;color:var(--accent)}
+  .card h2{margin:0;font-size:21px}
+  .card .meta{color:var(--muted);font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;margin:8px 0 20px}
+  .dl{margin-top:auto;display:inline-flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer;
+    font-family:var(--mono);font-size:13px;letter-spacing:.08em;font-weight:600;color:#001018;background:var(--accent);
+    border-radius:11px;padding:13px 22px;transition:.18s;width:100%;justify-content:center}
+  .dl:hover{filter:brightness(1.12)}
+  .dl.alt{background:transparent;color:var(--accent);border:1px solid var(--border-hi)}
+  .dl.alt:hover{background:rgba(0,212,255,.1)}
+  .term{margin:8px 0 0}
+  .term h3{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin:0 0 12px;text-align:center}
+  .cmd{display:flex;align-items:center;gap:14px;background:#05101c;border:1px solid var(--border);border-radius:12px;
+    padding:16px 18px;font-family:var(--mono);font-size:14px;overflow-x:auto}
+  .cmd code{color:#9fe7ff;white-space:nowrap}
+  .cmd .pr{color:var(--accent)}
+  .copy{margin-left:auto;flex:0 0 auto;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    color:var(--dim);background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 12px;transition:.18s}
+  .copy:hover{color:var(--text);border-color:var(--border-hi)}
+  .intel{display:block;margin-top:10px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);text-decoration:none}
+  .intel:hover{color:var(--text)}
+  .dlstatus{text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:#ffd27a;margin:22px auto 0;max-width:620px;min-height:16px}
+  .note{text-align:center;color:var(--muted);font-size:13px;line-height:1.6;margin:34px auto 0;max-width:620px}
+  .safe{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:38px 0 0;color:var(--dim);font-size:13px}
+  .safe div{display:flex;align-items:center;gap:8px}
+  .safe svg{width:16px;height:16px;color:var(--accent)}
+  footer{text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.1em;margin-top:54px}
+  footer a{color:var(--dim);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">J<b>.</b>A<b>.</b>R<b>.</b>V<b>.</b>I<b>.</b>S<b>.</b></div>
+    <a class="back" href="./">← BACK TO DEMO</a>
+  </header>
+
+  <section class="hero">
+    <h1>Download <span class="g">Jarvis</span></h1>
+    <p>Your local-first, voice-controlled AI assistant. One OpenAI key, held only on your machine. Install in under a minute.</p>
+    <div class="badges">
+      <span><i class="dot"></i>Local-first</span>
+      <span><i class="dot"></i>Signed &amp; auto-updating</span>
+      <span><i class="dot"></i>Open source</span>
+    </div>
+  </section>
+
+  <div class="cards">
+    <div class="card">
+      <div class="os">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4v7.1H3zM10.5 12.5v7.1L3 18.5v-6zM11.6 4.2 21 3v8.5h-9.4zM21 12.5V21l-9.4-1.3v-7.2z"/></svg>
+        <h2>Windows</h2>
+      </div>
+      <div class="meta">Windows 10/11 · 64-bit · .msi installer</div>
+      <a class="dl" id="dl-win" href="https://github.com/jamkabhazan-rgb/jarvis/releases/latest" target="_blank" rel="noopener">Download for Windows</a>
+    </div>
+
+    <div class="card">
+      <div class="os">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.8c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.2-1.5 2.7-.4 6.6 1.1 8.8.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7 1.9-1 2.6-2c.8-1.2 1.2-2.3 1.2-2.4-.1 0-2.2-.9-2.2-3.7zM14.2 6.1c.6-.7 1-1.7.9-2.7-.9 0-1.9.6-2.5 1.3-.5.6-1 1.6-.9 2.6 1 .1 2-.5 2.5-1.2z"/></svg>
+        <h2>macOS</h2>
+      </div>
+      <div class="meta">macOS 11+ · Apple Silicon &amp; Intel · .dmg</div>
+      <a class="dl" id="dl-mac" href="https://github.com/jamkabhazan-rgb/jarvis/releases/latest" target="_blank" rel="noopener">Download for macOS</a>
+      <a class="intel" id="dl-mac-intel" href="#" hidden>Intel Mac →</a>
+    </div>
+  </div>
+
+  <div class="term">
+    <h3>Or install from the terminal</h3>
+    <div class="cmd">
+      <span class="pr">$</span>
+      <code id="cmd-text">curl -fsSL https://jarvis.jamkabhazan.workers.dev/install.sh | sh</code>
+      <button class="copy" id="copy-cmd">COPY</button>
+    </div>
+  </div>
+
+  <div class="dlstatus" id="dlstatus"></div>
+
+  <div class="safe">
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V6z"/></svg>Data stays on your device</div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Key lives in your OS keychain</div>
+    <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg>Signature-verified updates</div>
+  </div>
+
+  <p class="note">Installers are published on GitHub Releases and cryptographically signed. After install, launch Jarvis and paste your OpenAI key once in Settings — it’s stored in your OS keychain and never leaves your machine.</p>
+
+  <footer>J.A.R.V.I.S. · <a href="https://github.com/jamkabhazan-rgb/jarvis" target="_blank" rel="noopener">github</a> · <a href="https://x.com/JarvisDynamics" target="_blank" rel="noopener">@JarvisDynamics</a></footer>
+</div>
+
+<script>
+  const REPO = 'jamkabhazan-rgb/jarvis';
+  const RELEASES = 'https://github.com/' + REPO + '/releases/latest';
+
+  // OS detection: surface the most relevant card first
+  const ua = (navigator.platform || '') + ' ' + (navigator.userAgent || '');
+  const isMac = /Mac|iPhone|iPad/i.test(ua);
+  if(isMac){ const c=document.querySelector('.cards'); const mac=document.getElementById('dl-mac')?.closest('.card'); if(c&&mac) c.prepend(mac); }
+
+  // copy the terminal command
+  document.getElementById('copy-cmd')?.addEventListener('click', async ()=>{
+    const t = document.getElementById('cmd-text').textContent;
+    try{ await navigator.clipboard.writeText(t); const b=document.getElementById('copy-cmd'); b.textContent='COPIED'; setTimeout(()=>b.textContent='COPY',1500); }catch(e){}
+  });
+
+  // Wire the buttons to DIRECT file links from the latest GitHub release, so
+  // one click downloads the installer (no intermediate page). Robust to the
+  // version embedded in filenames — we read the actual asset URLs at runtime.
+  (function(){
+    const win = document.getElementById('dl-win');
+    const mac = document.getElementById('dl-mac');
+    const macIntel = document.getElementById('dl-mac-intel');
+    const status = document.getElementById('dlstatus');
+    const pick = (assets, re)=> (assets.find(a=> re.test(a.name)) || {}).browser_download_url;
+
+    fetch('https://api.github.com/repos/' + REPO + '/releases/latest', { headers:{ Accept:'application/vnd.github+json' } })
+      .then(r=> r.ok ? r.json() : Promise.reject(r.status))
+      .then(rel=>{
+        const a = rel.assets || [];
+        const macArm = pick(a, /(aarch64|arm64|universal).*\.dmg$/i) || pick(a, /\.dmg$/i);
+        const macX64 = pick(a, /(x64|x86_64|intel).*\.dmg$/i);
+        const winUrl = pick(a, /(setup)?\.exe$/i) || pick(a, /\.msi$/i);
+
+        if(macArm){ mac.href = macArm; mac.removeAttribute('target'); mac.setAttribute('download',''); }
+        if(macX64 && macX64 !== macArm){ macIntel.href = macX64; macIntel.hidden = false; macIntel.setAttribute('download',''); }
+        if(winUrl){ win.href = winUrl; win.removeAttribute('target'); win.setAttribute('download',''); }
+
+        if(!macArm && !winUrl){
+          status.textContent = 'Build published, but no installer assets found yet — opening the releases page instead.';
+        }else{
+          status.textContent = 'Latest: ' + (rel.tag_name || '') + ' — click downloads the file directly.';
+          status.style.color = 'var(--dim)';
+        }
+      })
+      .catch(()=>{
+        // no published release yet → buttons fall back to the releases page
+        status.textContent = 'Installers are building — not published yet. The buttons open the releases page; check back in a few minutes.';
+      });
+  })();
+</script>
+</body>
+</html>

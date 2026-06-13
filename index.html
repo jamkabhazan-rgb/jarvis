@@ -1,14 +1,671 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>J.A.R.V.I.S.</title>
-<meta http-equiv="refresh" content="0; url=JARVIS.html">
-<link rel="canonical" href="JARVIS.html">
-<style>html,body{margin:0;height:100%;background:#03070d;color:#7fd9ff;font:14px/1.5 system-ui,sans-serif;display:flex;align-items:center;justify-content:center}</style>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="panels.css">
+<link rel="stylesheet" href="finance.css">
+<link rel="stylesheet" href="agents.css">
 </head>
 <body>
-<p>Loading J.A.R.V.I.S.… if nothing happens, <a href="JARVIS.html" style="color:#00d4ff">open it here</a>.</p>
+
+<div class="backdrop"></div>
+
+<!-- ============ BOOT OVERLAY ============ -->
+<div id="boot">
+  <div id="net-stage">
+    <canvas id="boot-net"></canvas>
+    <div id="boot-hud">
+      <div id="boot-status">INITIALIZING NEURAL CORE</div>
+      <div id="boot-bar"><i id="boot-bar-fill"></i></div>
+      <div id="boot-pct">0%</div>
+      <div id="boot-log"></div>
+    </div>
+  </div>
+
+  <div id="logo-stage">
+    <div class="logo" id="logo-glitch" data-text="J.A.R.V.I.S.">J.A.R.V.I.S.
+      <span class="logo-sub">JUST A RATHER VERY INTELLIGENT SYSTEM</span>
+    </div>
+  </div>
+
+  <div id="welcome-stage">
+    <div class="welcome"><span id="welcome-type"></span><span class="cursor">_</span></div>
+  </div>
+
+  <div id="orb-stage">
+    <canvas id="boot-orb"></canvas>
+    <div class="orb-stage-label" id="orb-stage-label"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="booting" aria-hidden="false">
+
+  <!-- topbar -->
+  <header id="topbar" class="panel section">
+    <div class="brand">
+      <span class="dot"></span>
+      <span class="name">J.A.R.V.I.S.</span>
+      <span class="ver">v2.0 · LOCAL</span>
+    </div>
+    <nav class="topnav">
+      <div class="tab active" data-tab="chat" data-title="Conversation" data-meta="LOCAL LLM · LLAMA 3.x" title="Chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.7L3 21l1.4-4.2A8.4 8.4 0 1 1 21 11.5z"/></svg>
+        <span class="tlabel">Chat</span>
+      </div>
+      <div class="tab" data-tab="tasks" data-title="Tasks" data-meta="3 ACTIVE · 1 DUE TODAY" title="Tasks">
+        <span class="badge">3</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+        <span class="tlabel">Tasks</span>
+      </div>
+      <div class="tab" data-tab="research" data-title="Research" data-meta="5 SOURCES QUEUED" title="Research">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span class="tlabel">Research</span>
+      </div>
+      <div class="tab" data-tab="goals" data-title="Goals" data-meta="NORTH STAR · 41%" title="Goals">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+        <span class="tlabel">Goals</span>
+      </div>
+      <div class="tab" data-tab="mail" data-title="Mail" data-meta="3 PRIORITY · 1 DRAFT" title="Mail">
+        <span class="badge">3</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <span class="tlabel">Mail</span>
+      </div>
+      <div class="tab" data-tab="finance" data-title="Finance" data-meta="JUNE · NET +$4,210" title="Finance">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-5 4 3 7-8"/><path d="M16 4h5v5"/></svg>
+        <span class="tlabel">Finance</span>
+      </div>
+      <div class="tab" data-tab="tracker" data-title="Tracker" data-meta="DAY 12 · STREAK 12" title="Tracker">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="tlabel">Tracker</span>
+      </div>
+      <div class="tab" data-tab="vault" data-title="Knowledge" data-meta="VAULT · 248 NOTES" title="Knowledge">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2z"/><path d="M9 3v18"/></svg>
+        <span class="tlabel">Knowledge</span>
+      </div>
+      <div class="tab" data-tab="connectors" data-title="Connectors" data-meta="0 LINKED · 29 AVAILABLE" title="Connectors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l-2 2a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0"/><path d="M15 13l2-2a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0"/><path d="M9 15l6-6"/></svg>
+        <span class="tlabel">Connectors</span>
+      </div>
+      <div class="tab" data-tab="agents" data-title="Agents" data-meta="3 AGENTS · LOCAL" title="Agents">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z"/><circle cx="12" cy="12" r="3"/><path d="M12 9V7M12 17v-2M15 12h2M7 12h2"/></svg>
+        <span class="tlabel">Agents</span>
+      </div>
+    </nav>
+    <div class="topright">
+      <div class="mode-toggle">
+        <button class="active">VOICE</button>
+        <button>CHAT</button>
+      </div>
+      <a class="download-btn" id="download-btn" href="download.html" title="Download Jarvis">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+        <span>DOWNLOAD</span>
+      </a>
+      <div class="indicators">
+        <button class="icon-btn" id="open-settings" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1A2 2 0 1 1 4.5 17l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.7 7.4l-.1-.1A2 2 0 1 1 7.4 4.5l.1.1A1.6 1.6 0 0 0 10 3.6V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1A2 2 0 1 1 19.5 7l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="main">
+    <!-- orb column -->
+    <aside id="orbcol" class="panel section">
+      <div class="orb-wrap">
+        <div class="orb-ring r1"></div>
+        <div class="orb-ring r2"></div>
+        <canvas id="orb"></canvas>
+      </div>
+      <div class="voice-state">
+        <div class="vs-label" id="vs-label">Standby</div>
+        <div class="vs-sub" id="vs-sub">Initializing…</div>
+      </div>
+      <div class="wave" id="wave">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </div>
+      <button class="mic-btn" id="mic-btn" title="Toggle voice">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <div class="mic-hint" id="mic-hint">CLICK OR SAY “HEY JARVIS”</div>
+      <button class="connect-btn" id="connect-btn" hidden>● CONNECT</button>
+    </aside>
+
+    <!-- panel column -->
+    <section id="panelcol" class="panel section">
+      <div class="panel-body">
+        <div class="panel-head">
+          <h2 id="panel-title">Conversation</h2>
+          <span class="ph-meta" id="panel-meta">LOCAL LLM · LLAMA 3.x</span>
+          <div class="ph-actions" id="chat-controls">
+            <button class="icon-btn sm" id="chat-new" title="New conversation">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="icon-btn sm" id="chat-history" title="Conversation history">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- CHAT -->
+        <div class="view" id="view-chat">
+          <div id="chat-stream"></div>
+        </div>
+        <div class="composer" id="composer">
+          <span class="prompt">›</span>
+          <input id="composer-input" type="text" placeholder="Type a command, or hold the mic to speak…" autocomplete="off">
+          <button class="send" id="composer-send">SEND</button>
+        </div>
+
+        <!-- TASKS · kanban -->
+        <div class="view" id="view-tasks" hidden>
+          <div class="board-bar" id="board-bar"></div>
+          <div class="kanban" id="kanban"></div>
+        </div>
+
+        <!-- RESEARCH -->
+        <div class="view" id="view-research" hidden>
+          <div class="rsrch-bar">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="rsrch-input" placeholder="Research anything — I’ll search the web, read, and summarize…">
+            <span class="rb-go" id="rsrch-go">RESEARCH</span>
+          </div>
+
+          <div class="hero">
+            <div class="thumb"><span>SOURCE PREVIEW</span></div>
+            <div class="h-body">
+              <div class="h-kicker">Latest brief · summarized 2 min ago</div>
+              <h3>Solid-state arc reactor efficiency at sub-zero load</h3>
+              <p class="h-sum">Across five recent papers, sustained output above 92% efficiency holds down to −40°C when the palladium lattice is pre-conditioned. The main loss term is dielectric leakage, not thermal — which suggests the casing, not the core, is the limiting factor for field deployment.</p>
+              <div class="h-foot">
+                <span class="src-chip"><span class="sdot"></span>5 sources</span>
+                <span class="src-chip">arXiv · IEEE · 3 more</span>
+                <span class="src-chip">3 min read</span>
+                <span class="src-chip">PHYSICS</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-head">Reading queue</div>
+          <div id="rq-list"></div>
+        </div>
+
+        <!-- GOALS -->
+        <div class="view" id="view-goals" hidden>
+          <div class="goals-hero">
+            <div class="ring" style="--p:41"><span class="rv">41<i>%</i></span></div>
+            <div class="gh-body">
+              <div class="gh-kicker">North star · life goal</div>
+              <h3>An arc reactor in every home</h3>
+              <p class="gh-sum">Clean, decentralized energy as the default. Every horizon below rolls up to this — Jarvis tracks the metrics and nudges when something falls behind.</p>
+              <div class="gh-tags">
+                <span class="src-chip"><span class="sdot"></span>8 active goals</span>
+                <span class="src-chip">on track</span>
+                <span class="src-chip">est. 2031</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-head">This year</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="68">
+              <div class="g-top"><span class="g-title">Ship the Mark VIII suit</span><span class="g-pct">68%</span></div>
+              <div class="g-sub">7 of 11 subsystems flight-qualified</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="30">
+              <div class="g-top"><span class="g-title">Open-source the energy patent</span><span class="g-pct">30%</span></div>
+              <div class="g-sub">Legal review · 2 of 6 filings cleared</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="col-head">This quarter</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="85">
+              <div class="g-top"><span class="g-title">Fully-local voice pipeline</span><span class="g-pct">85%</span></div>
+              <div class="g-sub">STT + LLM + TTS on-device · tuning latency</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="55">
+              <div class="g-top"><span class="g-title">Stark Expo keynote ready</span><span class="g-pct">55%</span></div>
+              <div class="g-sub">Narrative locked · demo + deck in progress</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="col-head">This month</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="72">
+              <div class="g-top"><span class="g-title">Inference latency &lt; 300 ms</span><span class="g-pct">72%</span></div>
+              <div class="g-sub">Now 384 ms → target 300 ms</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="82">
+              <div class="g-top"><span class="g-title">Vault: 300 notes indexed</span><span class="g-pct">82%</span></div>
+              <div class="g-sub">248 of 300 notes embedded</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="col-head">This week</div>
+          <div class="goal-grid">
+            <div class="goal" data-pct="71">
+              <div class="g-top"><span class="g-title">Deep-work, 5 of 7 days</span><span class="g-pct">71%</span></div>
+              <div class="g-sub">5 days hit · streak 12</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+            <div class="goal" data-pct="50">
+              <div class="g-top"><span class="g-title">Clear 12 backlog tasks</span><span class="g-pct">50%</span></div>
+              <div class="g-sub">6 of 12 closed</div>
+              <div class="bar-track"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIL -->
+        <div class="view" id="view-mail" hidden>
+          <div class="gconnect" id="mail-gate">
+            <div class="gc-ico">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </div>
+            <h3>Connect your inbox</h3>
+            <p>Jarvis reads, triages and drafts replies — but it needs access first. Authorize with Google to pull in Gmail and Calendar. Tokens stay in your system keychain; nothing is sent to the cloud without your say-so.</p>
+            <button class="gbtn" id="mail-connect">
+              <span class="g-mark">G</span>
+              Connect Google account
+            </button>
+            <div class="gc-note">Read-only by default · revoke anytime in Connectors</div>
+          </div>
+
+          <div id="mail-inbox" hidden>
+            <div class="col-head">Priority inbox · triaged</div>
+            <div class="cards">
+              <div class="card"><div class="c-main"><div class="c-title">Pepper Potts — Board deck for Monday</div><div class="c-sub">DRAFT PREPARED · AWAITING YOUR OK</div></div><span class="tag hi">REPLY</span></div>
+              <div class="card"><div class="c-main"><div class="c-title">Col. Rhodes — Joint test window</div><div class="c-sub">SUGGESTED: THU 09:00</div></div><span class="tag">SCHEDULE</span></div>
+              <div class="card"><div class="c-main"><div class="c-title">Stark Industries R&amp;D — Weekly digest</div><div class="c-sub">SUMMARIZED · 4 HIGHLIGHTS</div></div><span class="tag">FYI</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINANCE -->
+        <div class="view" id="view-finance" hidden>
+          <div class="fin-head">
+            <div class="fin-total">
+              <div class="ft-label">Total balance</div>
+              <div class="ft-val" id="fin-total">$0</div>
+            </div>
+            <div class="fin-accounts" id="fin-accounts"></div>
+            <div class="fin-actions">
+              <button class="fin-btn exp" id="fin-add-exp">+ Expense</button>
+              <button class="fin-btn inc" id="fin-add-inc">+ Income</button>
+            </div>
+          </div>
+          <div class="fin-entry" id="fin-entry" hidden></div>
+          <div class="fin-summary" id="fin-summary"></div>
+          <div class="col-head">Budgets · this month</div>
+          <div class="cat-grid" id="cat-grid"></div>
+          <div class="col-head">Recent transactions</div>
+          <div class="txn-list" id="txn-list"></div>
+        </div>
+
+        <!-- TRACKER -->
+        <div class="view" id="view-tracker" hidden>
+          <div class="stat-row">
+            <div class="stat"><div class="s-val">12</div><div class="s-lbl">Day streak</div></div>
+            <div class="stat"><div class="s-val">6h 41m</div><div class="s-lbl">Deep work</div></div>
+            <div class="stat"><div class="s-val">7.2h</div><div class="s-lbl">Sleep</div></div>
+          </div>
+          <div class="col-head">Today’s habits</div>
+          <div class="cards">
+            <div class="card done"><div class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="c-main"><div class="c-title">Morning review w/ Jarvis</div></div><span class="tag go">DONE</span></div>
+            <div class="card done"><div class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="c-main"><div class="c-title">Workshop — 2h focus block</div></div><span class="tag go">DONE</span></div>
+            <div class="card"><div class="check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></div><div class="c-main"><div class="c-title">Evening journal entry</div></div><span class="tag">PENDING</span></div>
+          </div>
+        </div>
+
+        <!-- KNOWLEDGE -->
+        <div class="view" id="view-vault" hidden>
+          <div class="vault-top">
+            <div class="vsearch">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="vault-search" placeholder="Search notes — full-text + tags…">
+            </div>
+            <div class="vault-stats">
+              <div class="vs"><b id="vault-count">0</b> NOTES</div>
+              <div class="vs"><b id="vault-links">0</b> LINKS</div>
+            </div>
+            <button class="ag-new" id="vault-new">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              New note
+            </button>
+          </div>
+          <div class="tagrow" id="vault-tags"></div>
+          <div class="vault-grid" id="vault-grid"></div>
+          <div class="vault-empty" id="vault-empty" hidden>No notes match.</div>
+        </div>
+
+        <!-- CONNECTORS -->
+        <div class="view" id="view-connectors" hidden>
+          <p class="conn-intro">Connect your accounts so Jarvis can read context and act through its skills. Connectors run on <b>your</b> credentials — auth tokens live in the system keychain, and Jarvis only requests scopes you approve.</p>
+          <div class="conn-section">Connected</div>
+          <div class="conn-grid" id="conn-linked"></div>
+          <div class="conn-section">Available</div>
+          <div class="conn-grid" id="conn-available"></div>
+        </div>
+
+        <!-- AGENTS -->
+        <div class="view" id="view-agents" hidden>
+          <div class="ag-head">
+            <p class="ag-intro">Build focused sub-agents from Jarvis. Each gets its own role, prompt, tools and knowledge bases — then runs in its own task chat.</p>
+            <button class="ag-new" id="ag-new">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              New agent
+            </button>
+          </div>
+          <div class="ag-grid" id="ag-grid"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- FX overlays -->
+<div class="fx scan"></div>
+<div class="fx vignette"></div>
+<div class="fx flicker"></div>
+
+<!-- SETTINGS · full page -->
+<div class="settings-page" id="settings">
+  <div class="sp-bar">
+    <div class="sp-title">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1A2 2 0 1 1 4.5 17l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.7 7.4l-.1-.1A2 2 0 1 1 7.4 4.5l.1.1A1.6 1.6 0 0 0 10 3.6V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1A2 2 0 1 1 19.5 7l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.2z"/></svg>
+      <h2>Settings</h2>
+    </div>
+    <div class="sp-actions">
+      <span class="saved" id="set-saved">✓ SAVED LOCALLY</span>
+      <button class="btn ghost" id="settings-close">CLOSE</button>
+      <button class="btn primary" id="settings-save">SAVE CHANGES</button>
+    </div>
+  </div>
+
+  <div class="sp-scroll">
+    <div class="sp-inner">
+      <!-- profile -->
+      <section class="sp-card profile">
+        <div class="avatar" id="sp-avatar">TS</div>
+        <div class="pf-meta">
+          <div class="pf-name" id="pf-name">Sir Stark</div>
+          <div class="pf-mail" id="pf-mail">sir@starkindustries.com</div>
+        </div>
+        <div class="pf-chip"><span class="led"></span>LOCAL ACCOUNT · ENCRYPTED</div>
+      </section>
+
+      <!-- identity -->
+      <section class="sp-card">
+        <h3>Identity</h3>
+        <p class="sp-desc">Jarvis greets you by name and signs drafts as you.</p>
+        <div class="field">
+          <label>Name</label>
+          <div class="row">
+            <input id="set-first" type="text" placeholder="First name" value="Sir">
+            <input id="set-last" type="text" placeholder="Last name" value="Stark">
+          </div>
+        </div>
+      </section>
+
+      <!-- account -->
+      <section class="sp-card">
+        <h3>Account &amp; security</h3>
+        <p class="sp-desc">Used for connectors, drafts and account recovery. Credentials are stored in the system keychain — never in plaintext.</p>
+        <div class="field">
+          <label>Email</label>
+          <input id="set-email" type="email" placeholder="you@domain.com" value="sir@starkindustries.com">
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-sub">Change password</div>
+        <div class="field">
+          <label>Current password</label>
+          <input id="set-pass-cur" type="password" placeholder="••••••••">
+        </div>
+        <div class="field">
+          <div class="row">
+            <div style="flex:1">
+              <label>New password</label>
+              <input id="set-pass-new" type="password" placeholder="At least 8 characters">
+            </div>
+            <div style="flex:1">
+              <label>Confirm new</label>
+              <input id="set-pass-confirm" type="password" placeholder="Repeat new password">
+            </div>
+          </div>
+          <div class="pass-meter"><div class="pm-fill" id="pm-fill"></div></div>
+        </div>
+        <div class="field-foot">
+          <span class="field-msg" id="pass-msg"></span>
+          <button class="btn ghost" id="set-pass-update">UPDATE PASSWORD</button>
+        </div>
+      </section>
+
+      <!-- assistant -->
+      <section class="sp-card">
+        <h3>Assistant</h3>
+        <p class="sp-desc">Shapes how Jarvis talks and behaves across every conversation.</p>
+        <div class="field">
+          <label>Wake word</label>
+          <input id="set-wake" type="text" placeholder="Hey Jarvis" value="Hey Jarvis">
+        </div>
+        <div class="field">
+          <label>Core system prompt</label>
+          <textarea id="set-prompt">You are Jarvis, a calm, dry-witted personal assistant. Be concise and proactive. Prefer doing over asking. Address me as “sir” only occasionally. Keep everything local and private; never send data to the cloud without explicit confirmation. When you use a tool, say what you did in one line.</textarea>
+          <div class="hint">Prepended to every conversation. Tool instructions stay in their own definitions.</div>
+        </div>
+      </section>
+
+      <!-- long-term memory -->
+      <section class="sp-card">
+        <h3>Long-term memory</h3>
+        <p class="sp-desc">Durable facts Jarvis keeps about you — names, preferences, recurring projects — injected into every conversation so it remembers across sessions. Jarvis adds these itself when you share something worth keeping; you can add or remove them here.</p>
+        <div class="mem-list" id="mem-list"><div class="mem-empty">No memories yet — tell Jarvis something worth remembering.</div></div>
+        <div class="link-add" style="margin-top:12px"><input id="mem-input" placeholder="Add a fact, e.g. “Prefers metric units”"><button class="btn ghost" id="mem-add">ADD</button></div>
+        <div class="field-foot"><span class="field-msg"></span><button class="btn ghost" id="mem-clear">CLEAR ALL</button></div>
+      </section>
+
+      <!-- openai -->
+      <section class="sp-card">
+        <h3>OpenAI</h3>
+        <p class="sp-desc">The whole AI surface runs on one OpenAI key. It's held only by the local core (OS keychain) — never stored in the app bundle or sent anywhere but OpenAI, on your key.</p>
+        <div class="field">
+          <label>API key</label>
+          <input id="set-api-key" type="password" placeholder="sk-… (stored in your OS keychain)" autocomplete="off">
+          <div class="hint"><span id="api-key-state">Checking…</span> · leave blank to keep the current key; clear and save to remove it.</div>
+        </div>
+      </section>
+
+      <!-- usage & cost -->
+      <section class="sp-card">
+        <h3>Usage &amp; cost</h3>
+        <p class="sp-desc">Live tally of OpenAI tokens and estimated spend on your key — counted from the actual API responses. Set a monthly budget and Jarvis warns you as you approach it.</p>
+        <div class="usage-grid" id="usage-grid">
+          <div class="ucell"><div class="uval" id="u-cost">$0.00</div><div class="ulab">This month</div></div>
+          <div class="ucell"><div class="uval" id="u-in">0</div><div class="ulab">Input tokens</div></div>
+          <div class="ucell"><div class="uval" id="u-out">0</div><div class="ulab">Output tokens</div></div>
+          <div class="ucell"><div class="uval" id="u-req">0</div><div class="ulab">Requests</div></div>
+        </div>
+        <div class="field">
+          <label>Monthly budget (USD)</label>
+          <div class="row">
+            <input id="set-budget" type="number" min="0" step="1" placeholder="e.g. 20 — 0 = no limit">
+          </div>
+          <div class="budget-bar"><div class="bb-fill" id="bb-fill"></div></div>
+          <div class="hint" id="u-budget-state">No budget set — usage is tracked but not capped.</div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-sub">All-time</div>
+        <div class="hint" id="u-alltime">No usage yet.</div>
+        <div class="field-foot">
+          <span class="field-msg"></span>
+          <button class="btn ghost" id="u-reset">RESET COUNTERS</button>
+        </div>
+      </section>
+
+      <!-- computer control -->
+      <section class="sp-card">
+        <h3>Computer control</h3>
+        <p class="sp-desc">Lets Jarvis — and any agent you grant the <b>Computer / shell</b> capability — act on this computer: open apps and folders, find files, run builds, deploy. <b>Enabled by default</b>, but nothing runs on its own: every command shows up as a card (in chat or in the agent's run window) and executes only after you click RUN. This toggle is the kill-switch — flip it off and execution stops instantly, everywhere, including agents.</p>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Allow Jarvis to run commands</div><div class="tr-s">One command at a time · your approval required for each</div></div><div class="switch on" data-toggle="system" id="sys-switch"></div></div>
+        <div class="field"><div class="hint" id="sys-state">Checking…</div></div>
+        <div class="sp-divider"></div>
+        <div class="sp-sub">Audit log — every executed command</div>
+        <div class="sys-log" id="sys-log"><div class="sys-log-empty">Nothing executed yet.</div></div>
+        <div class="field-foot">
+          <span class="field-msg"></span>
+          <button class="btn ghost" id="sys-log-clear">CLEAR LOG</button>
+        </div>
+      </section>
+
+      <!-- setup guide -->
+      <section class="sp-card">
+        <h3>Setup guide</h3>
+        <p class="sp-desc">Everything you need to configure for Jarvis to be fully operational.</p>
+        <ol class="setup-steps">
+          <li>
+            <b>OpenAI API key — required.</b> The whole AI surface (chat, voice, tools, agents) runs on one key.
+            Create it at <span class="mono-link">platform.openai.com/api-keys</span> (account needs billing enabled — pay-as-you-go, a few $ is plenty to start),
+            paste it in the <b>OpenAI</b> section above and hit SAVE CHANGES. It goes straight to your OS keychain — never stored in the app or sent anywhere except OpenAI.
+          </li>
+          <li>
+            <b>Microphone.</b> Press the mic button once — the OS will ask for permission on first use (macOS: System Settings → Privacy → Microphone; Windows prompts automatically).
+            After that voice is hands-free: just talk, a ~1.3s pause ends your turn, Jarvis answers out loud and keeps listening. Press the mic again to stop.
+          </li>
+          <li>
+            <b>Identity &amp; persona.</b> Set your name and tune the core system prompt in the sections above — it shapes how Jarvis talks in every conversation and for every agent.
+          </li>
+          <li>
+            <b>Computer control — on by default.</b> Jarvis can operate this machine, but never silently: every command appears as a card in chat and runs only after you click RUN; everything lands in the audit log. The toggle above turns the whole capability off instantly.
+          </li>
+          <li>
+            <b>Updates.</b> The app checks GitHub Releases for new versions. You can always grab the latest installer from the project's Releases page.
+          </li>
+        </ol>
+      </section>
+
+      <!-- docs -->
+      <section class="sp-card docs-card">
+        <h3>Docs — how Jarvis works</h3>
+        <p class="sp-desc">The full picture, plainly. Click a topic to expand.</p>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Architecture &amp; privacy</summary>
+          <div class="doc-body">
+            <p>Jarvis is a native desktop app (macOS &amp; Windows). The interface you see is a web layer; underneath runs a compiled <b>Rust core</b> that does all the real work and <b>owns your OpenAI key</b>.</p>
+            <ul>
+              <li>The key lives only in the OS keychain (macOS Keychain / Windows Credential Manager) — never in the app bundle, never in logs, never sent anywhere but OpenAI on your own account.</li>
+              <li>The web layer talks to the core through small typed calls and receives streamed results back — it never touches the key or calls OpenAI directly.</li>
+              <li>Everything is local-first: your tasks, notes, finance, memory and audit log stay on your machine.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Chat, voice &amp; memory</summary>
+          <div class="doc-body">
+            <ul>
+              <li><b>Chat</b> streams replies token-by-token from <code>gpt-4o-mini</code>. Transient network/rate errors retry automatically with backoff.</li>
+              <li><b>Voice</b> is hands-free: press the mic once, just talk. Local voice-activity detection ends your turn after ~1.3s of silence, transcribes it, Jarvis answers and speaks each sentence as it's generated, then keeps listening. Start talking over it to interrupt (barge-in).</li>
+              <li><b>Short-term memory</b> — the recent back-and-forth of the current conversation is always in context.</li>
+              <li><b>Long-term memory</b> — durable facts (names, preferences, projects) are saved with the <code>memory_save</code> tool and injected into every future conversation, so Jarvis remembers across sessions and restarts. Manage them in the Long-term memory section above.</li>
+              <li><b>Conversation archive</b> — every chat is saved in full. The clock icon in the chat header opens the history: browse all past conversations, search across them by any word, reopen one to keep talking, delete, or export them all to JSON. The <b>+</b> starts a fresh conversation.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Skills &amp; live panels</summary>
+          <div class="doc-body">
+            <p>Jarvis acts through tools. When you ask for something, it calls the right one and the matching panel updates live:</p>
+            <ul>
+              <li><b>Tasks/boards</b> — add, move, list, create boards.</li>
+              <li><b>Goals &amp; tracker</b> — set goal progress, log habits.</li>
+              <li><b>Knowledge vault</b> — save and search notes.</li>
+              <li><b>Finance</b> — record expenses, summarize the budget.</li>
+              <li><b>Research</b> — queue a topic to search &amp; summarize.</li>
+              <li><b>Memory</b> — remember/forget durable facts.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Computer control &amp; agents</summary>
+          <div class="doc-body">
+            <p>Jarvis — and any agent you grant the <b>Computer / shell</b> capability — can operate this machine: open apps and folders, find files, run builds, deploy.</p>
+            <ul>
+              <li><b>Nothing runs on its own.</b> A command appears as a card showing the exact text; it executes only after you click RUN (30s timeout, output shown inline).</li>
+              <li>Every run and denial is written to the <b>audit log</b> (in Computer control), tagged with the agent name when an agent issued it.</li>
+              <li>The Computer control toggle is the <b>kill-switch</b> — turn it off and execution stops instantly, everywhere, including agents.</li>
+              <li><b>Agents</b> are scoped assistants you build with their own prompt, tools and knowledge. They run in their own window with their own memory.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="doc">
+          <summary><span class="doc-ic">◈</span> Cost control &amp; updates</summary>
+          <div class="doc-body">
+            <ul>
+              <li><b>Usage &amp; cost</b> tallies real tokens from every response and estimates spend per month. Set a monthly budget and Jarvis warns you as you approach it.</li>
+              <li><b>Updates</b> — the app checks for new signed releases and offers a one-click “Update &amp; restart”. Each update's signature is verified before it installs.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- privacy -->
+      <section class="sp-card">
+        <h3>Privacy</h3>
+        <p class="sp-desc">Local-first by default. Cloud features are opt-in and run on your own keys.</p>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Local-only mode</div><div class="tr-s">Audio and data never leave this device</div></div><div class="switch on" data-toggle="local"></div></div>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Cloud LLM fallback</div><div class="tr-s">Use a cloud model when local is unavailable</div></div><div class="switch" data-toggle="cloud"></div></div>
+        <div class="toggle-row"><div class="tr-main"><div class="tr-t">Telemetry</div><div class="tr-s">Anonymous usage analytics</div></div><div class="switch" data-toggle="telemetry"></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="audio.js"></script>
+<script src="orb.js"></script>
+<script src="boot.js"></script>
+<script src="bridge.js"></script>
+<script src="store.js"></script>
+<!-- preview demo-agent config (committed file holds NO secrets) -->
+<script>
+  /* Hydrate the durable store (SQLite via core, or localStorage in a browser)
+     BEFORE the app modules run, so every STORE.load() at module-init time sees
+     persisted data. Modules are then loaded in order to preserve dependencies.
+     A per-load cache-buster guarantees the freshest JS after every deploy. */
+  (function(){
+    const V = '?v=' + Date.now();
+    function inject(src, parent){
+      return new Promise(res=>{
+        const s = document.createElement('script');
+        s.src = src + V; s.onload = s.onerror = ()=> res();
+        (parent || document.body).appendChild(s);
+      });
+    }
+    const mods = ['voice.js','app.js','panels.js','finance.js','agents.js','vault.js','research.js','demo-agent.js'];
+    async function loadSeq(){ for(const m of mods) await inject(m); }
+    // config first (committed endpoint), then optional local key override (gitignored)
+    inject('demo-config.js', document.head)
+      .then(()=> inject('demo-config.local.js', document.head))
+      .then(()=> Promise.resolve(window.STORE && window.STORE.hydrate && window.STORE.hydrate()).catch(()=>{}))
+      .finally(loadSeq);
+  })();
+</script>
 </body>
 </html>

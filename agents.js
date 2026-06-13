@@ -12,12 +12,12 @@
     {id:'web',name:'Web search'},{id:'mail',name:'Email'},{id:'tasks',name:'Tasks'},
     {id:'calendar',name:'Calendar'},{id:'finance',name:'Finance'},{id:'vault',name:'Knowledge vault'},
     {id:'notes',name:'Notes'},{id:'reminders',name:'Reminders'},{id:'code',name:'Code / repos'},
-    {id:'mindmap',name:'Mind-maps'},
+    {id:'system',name:'Computer / shell'},{id:'mindmap',name:'Mind-maps'},
   ];
   const KB_OPTS = ['Engineering','AI / on-device LLMs','Materials','Meetings','Research','Personal'];
   const capName = id => (CAPS.find(c=>c.id===id)||{}).name || id;
 
-  let AGENTS = [
+  const DEFAULT_AGENTS = [
     { id:'a1', name:'Research Analyst', color:'#00d4ff', glyph:'R',
       role:'Search the web, read sources and synthesize briefs',
       prompt:'You are a meticulous research analyst. Gather multiple sources, cross-check claims, and return a tight summary with citations. Flag uncertainty. Never pad.',
@@ -30,12 +30,15 @@
       caps:['mail','calendar','tasks','reminders'],
       kbs:['Meetings'], sources:[] },
     { id:'a3', name:'Code Engineer', color:'#c98bff', glyph:'C',
-      role:'Read repositories, plan changes, write specs',
-      prompt:'You read code and issues, propose a plan before editing, and keep changes small and reviewable. Explain trade-offs briefly.',
-      caps:['code','web','vault'],
+      role:'Read repos, run builds & deploys, plan changes',
+      prompt:'You read code and issues, propose a plan before editing, and keep changes small and reviewable. You can run shell commands (build, test, git, deploy) one at a time — each needs the user’s approval. Explain trade-offs briefly.',
+      caps:['code','web','vault','system'],
       kbs:['Engineering'], sources:['github.com/starkindustries/jarvis'] },
   ];
-  let uid = 10;
+  const ap = STORE.load('agents', null);
+  let AGENTS = (ap && ap.agents) || DEFAULT_AGENTS;
+  let uid = (ap && ap.uid) || 10;
+  function saveAgents(){ STORE.save('agents', { agents:AGENTS, uid }); }
 
   /* ---------- render grid ---------- */
   function iconHTML(a, big){
@@ -189,7 +192,7 @@
     draft.glyph = (draft.glyph || draft.name.trim()[0]).toUpperCase();
     if(editingId){ const idx=AGENTS.findIndex(a=>a.id===editingId); if(idx>=0) AGENTS[idx]=draft; }
     else { draft.id='a'+(++uid); AGENTS.push(draft); }
-    A.SFX.chime(); renderGrid(); closeBuilder();
+    saveAgents(); A.SFX.chime(); renderGrid(); closeBuilder();
   }
 
   /* ---------- run chat ---------- */
@@ -217,6 +220,7 @@
     const out=[];
     if(a.caps.includes('web')) out.push('Find the latest on …');
     if(a.caps.includes('mail')) out.push('Triage my inbox');
+    if(a.caps.includes('system')) out.push('Build and deploy the site');
     if(a.caps.includes('code')) out.push('Review the repo and plan a change');
     if(a.caps.includes('vault')) out.push('Summarize what we know about …');
     if(a.caps.includes('finance')) out.push('Break down this month’s spend');
@@ -232,10 +236,91 @@
     stream.scrollTop=stream.scrollHeight;
     return el;
   }
+  /* ---------- core-backed agent run (Tauri): stream on agent_* channel ---------- */
+  let agentBubble=null, agentTyping=null, agentReply='';
+  function agentTok(tok){
+    if(agentTyping){ agentTyping.remove(); agentTyping=null; }
+    if(!agentBubble){ const el=runMsg('a','',true); agentBubble=el.querySelector('.txt'); }
+    agentBubble.textContent += tok; agentReply += tok;
+    const s=$('#run-stream'); if(s) s.scrollTop=s.scrollHeight;
+  }
+  function agentTool(tc){
+    if(agentTyping){ agentTyping.remove(); agentTyping=null; }
+    agentBubble=null;
+    if(tc.name==='computer_run'){ renderAgentSysConfirm(tc.args||{}); return; } // approval card, not auto-applied
+    const color=runAgent?runAgent.color:'#00d4ff', glyph=runAgent?runAgent.glyph:'A', name=runAgent?runAgent.name:'Agent';
+    const el=document.createElement('div'); el.className='msg j';
+    el.innerHTML=`<div class="av" style="background:${color};color:#06080c">${esc(glyph)}</div><div class="body"><div class="who">${esc(name)}</div><div class="txt"><div class="tool-call"><div class="tc-head">⚙ tool · ${esc(tc.name)}<span class="tc-ok">✓ ok</span></div><div class="tc-body">${esc(JSON.stringify(tc.args||{}))}</div></div></div></div>`;
+    $('#run-stream').appendChild(el); $('#run-stream').scrollTop=$('#run-stream').scrollHeight;
+    try{ window.JTOOLS && window.JTOOLS[tc.name] && window.JTOOLS[tc.name](tc.args||{}); }catch(e){}
+  }
+
+  // shell command proposed by an agent → approval card in the run view (§17).
+  // Same safety as the main chat: nothing runs until the user clicks RUN; the
+  // result and an audit-log entry follow. Gated by the global toggle in core.
+  function renderAgentSysConfirm(args){
+    const cmd=String(args.command||'').trim(); const why=String(args.why||'').trim();
+    if(!cmd) return;
+    const color=runAgent?runAgent.color:'#00d4ff', glyph=runAgent?runAgent.glyph:'A', name=runAgent?runAgent.name:'Agent';
+    const stream=$('#run-stream');
+    const el=document.createElement('div'); el.className='msg j';
+    el.innerHTML=`<div class="av" style="background:${color};color:#06080c">${esc(glyph)}</div><div class="body"><div class="who">${esc(name)}</div><div class="txt">
+      <div class="tool-call sys-card"><div class="tc-head">⌘ computer · approval required</div><div class="tc-body">
+        <div class="sc-cmd">${esc(cmd)}</div>
+        ${why?`<div class="sc-why">${esc(why)}</div>`:''}
+        <div class="sc-actions"><button class="btn primary sc-run">RUN</button><button class="btn ghost sc-deny">CANCEL</button></div>
+      </div></div></div></div>`;
+    stream.appendChild(el); stream.scrollTop=stream.scrollHeight;
+    const body=el.querySelector('.tc-body'), runBtn=el.querySelector('.sc-run'), denyBtn=el.querySelector('.sc-deny');
+    const finish=(cls,text)=>{ el.querySelector('.sc-actions')?.remove(); const s=document.createElement('div'); s.className='sc-status '+cls; s.textContent=text; body.appendChild(s); stream.scrollTop=stream.scrollHeight; };
+    const logEntry=(entry)=>{ try{ const log=STORE.load('syslog',[])||[]; log.push(entry); while(log.length>100) log.shift(); STORE.save('syslog',log); window.JSYS?.renderSysLog(); }catch(e){} };
+    const now=()=> new Date().toLocaleString();
+    denyBtn.addEventListener('click', ()=>{ finish('deny','✕ DENIED — not executed'); logEntry({ts:now(),cmd,via:name,status:'denied'}); A.SFX.off(); });
+    runBtn.addEventListener('click', async ()=>{
+      runBtn.disabled=denyBtn.disabled=true; runBtn.textContent='RUNNING…';
+      try{
+        const r=await BRIDGE.invoke('system_execute', { command:cmd });
+        const out=[r.stdout,r.stderr].filter(s=>s&&s.trim()).join('\n').trim();
+        if(out){ const pre=document.createElement('div'); pre.className='sc-out'; pre.textContent=out; body.insertBefore(pre, el.querySelector('.sc-actions')); }
+        const ok=r.code===0 && !r.timed_out;
+        finish(ok?'ok':'err', r.timed_out?'⏱ TIMEOUT — killed after 30s':(ok?'✓ exit 0':'⚠ exit '+r.code));
+        logEntry({ts:now(),cmd,via:name,code:r.code,timed_out:!!r.timed_out});
+        A.SFX.chime();
+      }catch(err){ finish('err','⚠ '+String(err)); logEntry({ts:now(),cmd,via:name,status:'error'}); A.SFX.off(); }
+    });
+  }
+  // per-agent-run conversation memory (resets when a different agent is opened)
+  let agentConvo=[]; const AGENT_CONVO_MAX=16; let agentConvoFor=null;
+  async function initAgentCore(){
+    if(!(window.BRIDGE && window.BRIDGE.inTauri)) return;
+    await BRIDGE.listen('agent_token', agentTok);
+    await BRIDGE.listen('agent_tool_call', agentTool);
+    await BRIDGE.listen('agent_done', ()=>{
+      if(agentReply && agentReply.trim()){ agentConvo.push({role:'assistant', content:agentReply.trim()});
+        while(agentConvo.length>AGENT_CONVO_MAX) agentConvo.shift(); }
+      agentBubble=null;
+    });
+  }
+
   function sendRun(){
     const inp=$('#run-input'); const v=inp.value.trim(); if(!v||!runAgent) return;
     inp.value=''; runMsg('u', v); A.SFX.blip();
     const a=runAgent;
+
+    // route through the core when running in the Tauri app
+    if(window.BRIDGE && window.BRIDGE.inTauri){
+      agentBubble=null; agentReply='';
+      if(agentConvoFor!==a.id){ agentConvo=[]; agentConvoFor=a.id; }  // fresh memory per agent
+      const history=agentConvo.slice();
+      agentConvo.push({role:'user', content:v});
+      agentTyping=document.createElement('div'); agentTyping.className='msg j';
+      agentTyping.innerHTML=`<div class="av" style="background:${a.color};color:#06080c">${esc(a.glyph)}</div><div class="body"><div class="who">${esc(a.name)}</div><div class="typing"><span></span><span></span><span></span></div></div>`;
+      $('#run-stream').appendChild(agentTyping); $('#run-stream').scrollTop=$('#run-stream').scrollHeight;
+      BRIDGE.invoke('agent_send', { text:v, caps:a.caps||[], state:(window.JSTATE?window.JSTATE():null), persona:{ prompt:a.prompt||'', name:'' }, history })
+        .catch(err=>{ if(agentTyping){agentTyping.remove();agentTyping=null;} runMsg('a','Core error: '+String(err), true); });
+      return;
+    }
+
     // typing indicator
     const t=document.createElement('div'); t.className='msg j';
     t.innerHTML=`<div class="av" style="background:${a.color};color:#06080c">${esc(a.glyph)}</div><div class="body"><div class="who">${esc(a.name)}</div><div class="typing"><span></span><span></span><span></span></div></div>`;
@@ -283,4 +368,5 @@
 
   injectOverlays();
   renderGrid();
+  initAgentCore();
 })();
