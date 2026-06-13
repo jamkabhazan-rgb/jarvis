@@ -145,9 +145,7 @@ body{
 }
 
 /* ---- topbar ---- */
-#topbar{height:54px;display:flex;align-items:center;gap:18px;padding:0 18px;flex:0 0 auto;
-  background:linear-gradient(180deg,rgba(92,116,148,.96),rgba(60,80,106,.96));
-  border-color:rgba(165,210,245,.34);box-shadow:0 2px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(190,225,255,.18)}
+#topbar{height:54px;display:flex;align-items:center;gap:18px;padding:0 18px;flex:0 0 auto}
 .brand{display:flex;align-items:center;gap:12px}
 .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulseDot 2.4s ease-in-out infinite}
 @keyframes pulseDot{50%{opacity:.4;transform:scale(.7)}}
