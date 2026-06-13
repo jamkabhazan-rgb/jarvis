@@ -199,24 +199,27 @@ STYLE: concise, conversational, spoken aloud — usually 1-4 sentences, warm, li
   // render live transcripts in the chat + drive the orb state
   function onServerEvent(ev){
     let m; try{ m = JSON.parse(ev.data); }catch(e){ return; }
-    switch(m.type){
-      case 'input_audio_buffer.speech_started':
-        window.ORB?.set?.('listening'); vis('Listening','I hear you…','TAP TO HANG UP'); break;
-      case 'conversation.item.input_audio_transcription.completed':
-        if(m.transcript && m.transcript.trim()){
-          window.UI?.addMsg?.('u', window.UI?.escapeHtml?.(m.transcript.trim()));
-          window.UI?.logUser?.(m.transcript.trim());
-        }
-        window.ORB?.set?.('thinking'); vis('Thinking','…','TAP TO HANG UP'); break;
-      case 'response.audio_transcript.delta':
-        if(!rt.asstNode){ const b = window.UI?.addMsg?.('j',''); rt.asstNode = b?.querySelector('.txt'); rt.asstText=''; window.ORB?.set?.('speaking'); vis('Speaking','Jarvis is talking…','TAP TO HANG UP'); }
-        rt.asstText += (m.delta||''); if(rt.asstNode){ rt.asstNode.textContent = rt.asstText; window.UI?.scrollBottom?.(); }
-        break;
-      case 'response.audio_transcript.done':
-        if(rt.asstText.trim()) window.UI?.logAssistant?.(rt.asstText.trim());
-        rt.asstNode = null; assistantTurns++; maybeOfferReview();
-        if(rt.active){ window.ORB?.set?.('listening'); vis('Connected','Listening — just talk · tap mic to end','TAP TO HANG UP'); }
-        break;
+    const t = m.type || '';
+    if(t === 'input_audio_buffer.speech_started'){ window.ORB?.set?.('listening'); vis('Listening','I hear you…','TAP TO HANG UP'); return; }
+    // what YOU said (transcript of your speech) — any API naming
+    if(/input_audio_transcription\.(completed|done)$/.test(t)){
+      const tr = (m.transcript || m.text || '').trim();
+      if(tr){ window.UI?.addMsg?.('u', window.UI?.escapeHtml?.(tr)); window.UI?.logUser?.(tr); }
+      window.ORB?.set?.('thinking'); vis('Thinking','…','TAP TO HANG UP'); return;
+    }
+    // what JARVIS says (transcript of his spoken reply) streamed into the chat —
+    // covers preview (response.audio_transcript.delta) + GA (response.output_audio_transcript.delta) + text deltas
+    if(/audio_transcript\.delta$/.test(t) || /(output_text|\.text)\.delta$/.test(t)){
+      if(!rt.asstNode){ const b = window.UI?.addMsg?.('j',''); rt.asstNode = b?.querySelector('.txt'); rt.asstText=''; window.ORB?.set?.('speaking'); vis('Speaking','Jarvis is talking…','TAP TO HANG UP'); }
+      rt.asstText += (m.delta || ''); if(rt.asstNode){ rt.asstNode.textContent = rt.asstText; window.UI?.scrollBottom?.(); }
+      return;
+    }
+    if(/audio_transcript\.done$/.test(t) || /(output_text|\.text)\.done$/.test(t) || t === 'response.done'){
+      const full = (rt.asstText || '').trim();
+      if(full){ if(rt.asstNode) rt.asstNode.textContent = full; window.UI?.logAssistant?.(full); assistantTurns++; maybeOfferReview(); }
+      rt.asstNode = null; rt.asstText = '';
+      if(rt.active){ window.ORB?.set?.('listening'); vis('Connected','Listening — just talk · tap mic to end','TAP TO HANG UP'); }
+      return;
     }
   }
 
