@@ -146,8 +146,8 @@ body{
 
 /* ---- topbar ---- */
 #topbar{height:54px;display:flex;align-items:center;gap:18px;padding:0 18px;flex:0 0 auto;
-  background:linear-gradient(180deg,rgba(38,54,74,.72),rgba(24,35,50,.78));
-  border-color:rgba(130,185,235,.22);box-shadow:0 2px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(150,200,240,.08)}
+  background:linear-gradient(180deg,rgba(70,92,120,.92),rgba(46,63,86,.94));
+  border-color:rgba(150,200,240,.30);box-shadow:0 2px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(170,215,255,.14)}
 .brand{display:flex;align-items:center;gap:12px}
 .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulseDot 2.4s ease-in-out infinite}
 @keyframes pulseDot{50%{opacity:.4;transform:scale(.7)}}
