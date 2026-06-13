@@ -444,6 +444,37 @@
   $('#chat-new')?.addEventListener('click', newConversation);
   addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#hist-modal')?.classList.contains('open')) closeHistory(); });
 
+  /* ---------- download modal (in-app — topbar stays) ---------- */
+  const dlModal = $('#dl-modal');
+  let dlWired = false;
+  function openDownload(){
+    if(!dlModal) return;
+    dlModal.classList.add('open'); A.SFX.blip();
+    if(dlWired) return; dlWired = true;
+    // pull direct installer links from the latest GitHub release (one click)
+    const REPO='jamkabhazan-rgb/jarvis';
+    const win=$('#dlm-win'), mac=$('#dlm-mac'), macIntel=$('#dlm-mac-intel'), status=$('#dlm-status');
+    const pick=(as,re)=>(as.find(a=>re.test(a.name))||{}).browser_download_url;
+    fetch('https://api.github.com/repos/'+REPO+'/releases/latest',{headers:{Accept:'application/vnd.github+json'}})
+      .then(r=> r.ok?r.json():Promise.reject(r.status))
+      .then(rel=>{ const a=rel.assets||[];
+        const arm=pick(a,/(aarch64|arm64|universal).*\.dmg$/i)||pick(a,/\.dmg$/i);
+        const x64=pick(a,/(x64|x86_64|intel).*\.dmg$/i);
+        const w=pick(a,/(setup)?\.exe$/i)||pick(a,/\.msi$/i);
+        if(arm){ mac.href=arm; mac.removeAttribute('target'); mac.setAttribute('download',''); }
+        if(x64&&x64!==arm){ macIntel.href=x64; macIntel.hidden=false; macIntel.setAttribute('download',''); }
+        if(w){ win.href=w; win.removeAttribute('target'); win.setAttribute('download',''); }
+        if(status) status.textContent = (arm||w) ? ('Latest: '+(rel.tag_name||'')+' — downloads start instantly') : 'Opening the releases page…';
+      })
+      .catch(()=>{ if(status) status.textContent='Installers are building — buttons open the releases page.'; });
+  }
+  function closeDownload(){ dlModal?.classList.remove('open'); }
+  $('#download-btn')?.addEventListener('click', e=>{ e.preventDefault(); openDownload(); });
+  $('#dl-close')?.addEventListener('click', closeDownload);
+  dlModal?.addEventListener('click', e=>{ if(e.target===dlModal) closeDownload(); });
+  $('#dlm-copy')?.addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText($('#dlm-cmd').textContent); const b=$('#dlm-copy'); b.textContent='COPIED'; setTimeout(()=>b.textContent='COPY',1500);}catch(e){} });
+  addEventListener('keydown', e=>{ if(e.key==='Escape' && dlModal?.classList.contains('open')) closeDownload(); });
+
   /* ---------- ready hook from boot ---------- */
   window.APP = {
     async onReady(){

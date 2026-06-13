@@ -152,20 +152,29 @@
     const cx=W/2,cy=H/2; const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
     const R=Math.min(W,H)*0.26;
 
-    const N=760, ps=[];
-    for(let i=0;i<N;i++){ const t=Math.acos(2*Math.random()-1), p=Math.random()*Math.PI*2;
-      ps.push({ t,p, r:R*(0.95+Math.random()*0.08), sx:(Math.random()-0.5)*W*1.7, sy:(Math.random()-0.5)*H*1.7,
-        sp:0.5+Math.random()*1.0, jit:Math.random()*Math.PI*2, delay:Math.random()*0.45, X:0,Y:0,depth:0 });
+    const N=560, ps=[];
+    for(let i=0;i<N;i++){ const t=Math.acos(2*((i+0.5)/N)-1), p=i*2.399963;  // even spiral → coherent mesh
+      ps.push({ t,p, r:R*(0.96+Math.random()*0.06), sx:(Math.random()-0.5)*W*1.8, sy:(Math.random()-0.5)*H*1.8,
+        sp:0.5+Math.random()*1.0, jit:Math.random()*7, delay:Math.random()*0.4, X:0,Y:0,depth:0, le:0 });
     }
-    const rings=[];
+    // nearest-neighbour synapses (computed once) so neurons wire into one sphere
+    const U=ps.map(p=>{ const st=Math.sin(p.t); return [st*Math.cos(p.p),Math.cos(p.t),st*Math.sin(p.p)]; });
+    const seen=new Set(), links=[];
+    for(let i=0;i<N;i++){ let b1=-1,b2=-1,d1=9,d2=9;
+      for(let j=0;j<N;j++){ if(i===j) continue;
+        const dx=U[i][0]-U[j][0],dy=U[i][1]-U[j][1],dz=U[i][2]-U[j][2],d=dx*dx+dy*dy+dz*dz;
+        if(d<d1){ d2=d1;b2=b1;d1=d;b1=j; } else if(d<d2){ d2=d;b2=j; } }
+      [b1,b2].forEach(j=>{ if(j<0)return; const k=i<j?i+'-'+j:j+'-'+i; if(!seen.has(k)){seen.add(k);links.push({a:i,b:j});} });
+    }
+    const rings=[], pulses=[];
 
     // serious build: deep rumble + confident riser + milestone thuds
     const stopR=A.rumble({f0:26, vol:0.16});
-    A.riser({dur:2.6, vol:0.14});
-    setTimeout(()=>A.SFX.thud({vol:0.26}), 700);
-    setTimeout(()=>A.SFX.thud({vol:0.3}), 1500);
+    A.riser({dur:2.8, vol:0.14});
+    setTimeout(()=>A.SFX.thud({vol:0.24}), 700);
+    setTimeout(()=>A.SFX.thud({vol:0.28}), 1500);
 
-    const T=2300,t0=performance.now(); let rot=0,climaxed=false,flash=0;
+    const T=2700,t0=performance.now(); let rot=0,climaxed=false,flash=0;
     await new Promise(res=>{
       function frame(){
         if(boot.finished){ res(); return; }
@@ -175,7 +184,7 @@
         const ease=1-Math.pow(1-Math.min(1,e/0.85),3);
 
         if(e<0.88 && Math.random()<0.04+e*0.09) rings.push({r:R*0.5,a:0.5});
-        if(e>=0.86 && !climaxed){ climaxed=true; flash=1; A.online();
+        if(e>=0.86 && !climaxed){ climaxed=true; flash=1; A.online(); rings.push({r:R*0.2,a:0.85});
           const lab=$('#orb-stage-label'); lab.textContent='SYSTEM ONLINE'; lab.classList.add('show'); }
 
         const glow=0.2+ease*0.9+(climaxed?flash*1.4:0);
@@ -198,17 +207,23 @@
           const persp=520/(520+z1);
           const sphX=cx+x1*persp, sphY=cy+y*persp;
           pt.X=(cx+pt.sx)+(sphX-(cx+pt.sx))*le; pt.Y=(cy+pt.sy)+(sphY-(cy+pt.sy))*le;
-          pt.depth=(z1+R)/(2*R);
+          pt.depth=(z1+R)/(2*R); pt.le=le;
         }
-        // neural mesh between adjacent particles once mostly formed
-        if(ease>0.5){ ctx.lineWidth=0.6;
-          for(let i=0;i<N;i+=2){ const a=ps[i],b=ps[(i+1)%N];
-            ctx.strokeStyle=`hsla(195,100%,62%,${(ease-0.5)*0.14*((a.depth+b.depth)*0.5+0.3)})`;
-            ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(b.X,b.Y); ctx.stroke(); } }
-        for(const pt of ps){ const size=(0.6+1.6)*(0.5+0.9), s=(0.6+1.0)*(0.5+(ease)*0.9);
-          const a=(0.1+pt.depth*0.7)*(0.25+0.75);
+        // synapses light up as the neurons wire into one sphere
+        const meshA=Math.max(0,(ease-0.25)/0.75);
+        if(meshA>0){ ctx.lineWidth=0.7;
+          for(const l of links){ const a=ps[l.a],b=ps[l.b]; const lf=Math.min(a.le,b.le); if(lf<0.45) continue;
+            const dep=(a.depth+b.depth)*0.5;
+            ctx.strokeStyle=`hsla(195,100%,${56+dep*20}%,${meshA*(0.05+dep*0.18)*lf})`;
+            ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(b.X,b.Y); ctx.stroke(); }
+          if(ease>0.55 && pulses.length<46 && Math.random()<0.5){ const l=links[(Math.random()*links.length)|0]; pulses.push({a:l.a,b:l.b,p:0,sp:0.6+Math.random()*0.8}); }
+        }
+        for(let i=pulses.length-1;i>=0;i--){ const pu=pulses[i]; pu.p+=pu.sp*0.03; if(pu.p>=1){pulses.splice(i,1);continue;}
+          const a=ps[pu.a],b=ps[pu.b], x=a.X+(b.X-a.X)*pu.p, y=a.Y+(b.Y-a.Y)*pu.p;
+          ctx.fillStyle='hsla(200,100%,85%,0.9)'; ctx.beginPath(); ctx.arc(x,y,1.8,0,7); ctx.fill(); }
+        for(const pt of ps){ const s=(0.7+1.0)*(0.5+pt.le*0.9), a=(0.12+pt.depth*0.7)*(0.3+0.7*pt.le);
           ctx.beginPath(); ctx.arc(pt.X,pt.Y,s,0,7);
-          ctx.fillStyle=`hsla(${190+pt.depth*16},100%,${58+pt.depth*22}%,${a})`; ctx.fill(); }
+          ctx.fillStyle=`hsla(${190+pt.depth*16},100%,${60+pt.depth*22}%,${a})`; ctx.fill(); }
 
         const coreR=R*0.34*(0.55+ease*0.55)+(climaxed?flash*R*0.35:0);
         ctx.beginPath(); ctx.arc(cx,cy,coreR,0,7);
