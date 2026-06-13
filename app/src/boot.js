@@ -143,96 +143,104 @@
     await sleep(320); stage.classList.remove('on'); stage.style.opacity='';
   }
 
-  /* ---- phase 4: neurons assemble into a ring, then ignite (SYSTEM ONLINE) ---- */
+  /* ---- phase 4: neurons assemble into a mesh sphere, then ignite (SYSTEM ONLINE) ---- */
   async function phaseOrbForm(){
     const stage=$('#orb-stage'); stage.classList.add('on');
     const canvas=$('#boot-orb');
     const dpr=Math.min(window.devicePixelRatio||1,2);
     const W=innerWidth,H=innerHeight; canvas.width=W*dpr; canvas.height=H*dpr;
     const cx=W/2,cy=H/2; const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
-    const R=Math.min(W,H)*0.30;
+    const R=Math.min(W,H)*0.26;
 
-    // same flat-neuron look as the opening — scattered, then folding onto a ring band
-    const N=130, ns=[];
-    for(let i=0;i<N;i++){
-      const band=R*(0.74 + (i%3)*0.13);          // 3 concentric radii → a woven ring
-      const ang=(i/N)*Math.PI*2 + (i%3)*0.18;
-      ns.push({ ang, band,
-        x:cx+(Math.random()-0.5)*W*1.5, y:cy+(Math.random()-0.5)*H*1.5,
-        delay:Math.random()*0.4, ph:Math.random()*7, r:1.6+Math.random()*1.7, X:0,Y:0, le:0 });
+    // dense sphere of neurons (golden spiral → even) that fly in from scatter
+    const N=240, ps=[];
+    for(let i=0;i<N;i++){ const t=Math.acos(2*((i+0.5)/N)-1), p=i*2.399963;
+      ps.push({ t,p, r:R*(0.97+Math.random()*0.05), sx:(Math.random()-0.5)*W*1.7, sy:(Math.random()-0.5)*H*1.7,
+        sp:0.4+Math.random()*0.9, jit:Math.random()*7, delay:Math.random()*0.4, X:0,Y:0,depth:0,le:0 });
     }
-    // synapses: weave neighbours along the ring (index-adjacent + a short chord)
-    const links=[];
-    for(let i=0;i<N;i++){ links.push({a:i,b:(i+1)%N}); if(i%2===0) links.push({a:i,b:(i+3)%N}); }
-    const pulses=[], rings=[];
+    // nearest-3 neighbour mesh → triangulated web on the sphere
+    const U=ps.map(p=>{ const st=Math.sin(p.t); return [st*Math.cos(p.p),Math.cos(p.t),st*Math.sin(p.p)]; });
+    const seen=new Set(), links=[];
+    for(let i=0;i<N;i++){ const d=[];
+      for(let j=0;j<N;j++){ if(i===j) continue; const dx=U[i][0]-U[j][0],dy=U[i][1]-U[j][1],dz=U[i][2]-U[j][2]; d.push([dx*dx+dy*dy+dz*dz,j]); }
+      d.sort((a,b)=>a[0]-b[0]);
+      for(let k=0;k<3;k++){ const j=d[k][1]; const key=i<j?i+'-'+j:j+'-'+i; if(!seen.has(key)){seen.add(key);links.push({a:i,b:j});} }
+    }
+    const pulses=[];
+    const guides=[R*1.18, R*1.5];   // faint concentric guide rings
 
-    // serious build: deep rumble + confident riser + milestone thuds
     const stopR=A.rumble({f0:26, vol:0.16});
     A.riser({dur:2.6, vol:0.14});
     setTimeout(()=>A.SFX.thud({vol:0.24}), 700);
     setTimeout(()=>A.SFX.thud({vol:0.28}), 1500);
 
-    const T=2600,t0=performance.now(); let spin=0,climaxed=false,flash=0;
+    const T=2700,t0=performance.now(); let rot=0,climaxed=false,flash=0;
     await new Promise(res=>{
       function frame(){
         if(boot.finished){ res(); return; }
-        const e=(performance.now()-t0)/T; const ease=1-Math.pow(1-Math.min(1,e/0.85),3);
-        spin += 0.003 + e*0.012;
-        const now=performance.now();
+        const e=(performance.now()-t0)/T; rot+=0.005+e*0.018;
+        const ease=1-Math.pow(1-Math.min(1,e/0.86),3); const now=performance.now();
         ctx.clearRect(0,0,W,H);
+
+        // holographic scanlines
+        ctx.globalAlpha=0.05*ease; ctx.strokeStyle='#1a3c4e'; ctx.lineWidth=1;
+        for(let y=(now*0.01)%4; y<H; y+=4){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+        ctx.globalAlpha=1;
+
         ctx.globalCompositeOperation='lighter';
 
-        // positions: lerp from scattered → ring target (which slowly rotates)
-        for(const n of ns){
-          const le=Math.max(0,Math.min(1,(ease-n.delay)/(1-n.delay)));
-          const a=n.ang+spin;
-          const tx=cx+Math.cos(a)*n.band, ty=cy+Math.sin(a)*n.band;
-          n.X=n.x+(tx-n.x)*le + Math.sin(now/620+n.ph)*2.4*le;
-          n.Y=n.y+(ty-n.y)*le + Math.cos(now/620+n.ph)*2.4*le;
-          n.le=le;
+        // guide rings
+        for(const gr of guides){ ctx.strokeStyle=`hsla(200,90%,60%,${0.07*ease})`; ctx.lineWidth=1;
+          ctx.beginPath(); ctx.arc(cx,cy,gr*(0.6+ease*0.4),0,7); ctx.stroke(); }
+
+        // central glow (modest)
+        const glow=0.15+ease*0.65+(climaxed?flash*1.2:0);
+        const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*1.4);
+        cg.addColorStop(0,`hsla(194,100%,72%,${0.32*glow})`);
+        cg.addColorStop(0.5,`hsla(200,100%,55%,${0.1*glow})`);
+        cg.addColorStop(1,'hsla(200,100%,50%,0)');
+        ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(cx,cy,R*1.4,0,7); ctx.fill();
+
+        // project (rotateY + slight tilt) and fly in
+        const cosY=Math.cos(rot),sinY=Math.sin(rot), cosX=Math.cos(0.34),sinX=Math.sin(0.34);
+        for(const pt of ps){
+          const le=Math.max(0,Math.min(1,(ease-pt.delay)/(1-pt.delay)));
+          const r=pt.r+Math.sin(now/400*pt.sp+pt.jit)*3;
+          const x=r*Math.sin(pt.t)*Math.cos(pt.p), y=r*Math.cos(pt.t), z=r*Math.sin(pt.t)*Math.sin(pt.p);
+          const x1=x*cosY-z*sinY, z1=x*sinY+z*cosY;
+          const y1=y*cosX-z1*sinX, z2=y*sinX+z1*cosX;
+          const persp=320/(320+z2);
+          const sphX=cx+x1*persp, sphY=cy+y1*persp;
+          pt.X=(cx+pt.sx)+(sphX-(cx+pt.sx))*le; pt.Y=(cy+pt.sy)+(sphY-(cy+pt.sy))*le;
+          pt.depth=(z2+R)/(2*R); pt.le=le;
         }
 
-        // central glow
-        const glow=0.18+ease*0.85+(climaxed?flash*1.4:0);
-        const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*1.9);
-        cg.addColorStop(0,`hsla(194,100%,72%,${0.42*glow})`);
-        cg.addColorStop(0.5,`hsla(200,100%,55%,${0.12*glow})`);
-        cg.addColorStop(1,'hsla(200,100%,50%,0)');
-        ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(cx,cy,R*1.9,0,7); ctx.fill();
-
-        // expanding rings (occasional + ignition)
-        if(e<0.9 && Math.random()<0.03+e*0.05) rings.push({r:R*0.5,a:0.4});
-        for(let i=rings.length-1;i>=0;i--){ const rg=rings[i]; rg.r+=6; rg.a*=0.96;
-          if(rg.a<0.02){ rings.splice(i,1); continue; }
-          ctx.beginPath(); ctx.arc(cx,cy,rg.r,0,7); ctx.strokeStyle=`hsla(190,100%,66%,${rg.a})`; ctx.lineWidth=1.4; ctx.stroke(); }
-
-        // synapses light up as neurons lock into the circle
-        ctx.lineWidth=0.8;
-        for(const l of links){ const a=ns[l.a],b=ns[l.b]; const lf=Math.min(a.le,b.le); if(lf<0.4) continue;
-          ctx.strokeStyle=`hsla(192,100%,62%,${(0.05+0.15*lf)})`;
-          ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(b.X,b.Y); ctx.stroke();
-          if(e>0.5 && pulses.length<48 && Math.random()<0.004) pulses.push({a:l.a,b:l.b,p:0,sp:0.6+Math.random()*0.7}); }
+        // mesh lights up as the web forms
+        const meshA=Math.max(0,(ease-0.2)/0.8);
+        if(meshA>0){ ctx.lineWidth=0.6;
+          for(const l of links){ const a=ps[l.a],b=ps[l.b]; const lf=Math.min(a.le,b.le); if(lf<0.4) continue;
+            const dep=(a.depth+b.depth)*0.5;
+            ctx.strokeStyle=`hsla(198,100%,${50+dep*24}%,${meshA*(0.05+dep*0.15)*lf})`;
+            ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(b.X,b.Y); ctx.stroke(); }
+          if(e>0.5 && pulses.length<40 && Math.random()<0.4){ const l=links[(Math.random()*links.length)|0]; pulses.push({a:l.a,b:l.b,p:0,sp:0.6+Math.random()*0.7}); }
+        }
         for(let i=pulses.length-1;i>=0;i--){ const pu=pulses[i]; pu.p+=pu.sp*0.03; if(pu.p>=1){pulses.splice(i,1);continue;}
-          const a=ns[pu.a],b=ns[pu.b], x=a.X+(b.X-a.X)*pu.p, y=a.Y+(b.Y-a.Y)*pu.p;
-          ctx.fillStyle='hsla(200,100%,85%,0.9)'; ctx.beginPath(); ctx.arc(x,y,2,0,7); ctx.fill(); }
+          const a=ps[pu.a],b=ps[pu.b], x=a.X+(b.X-a.X)*pu.p, y=a.Y+(b.Y-a.Y)*pu.p;
+          ctx.fillStyle='hsla(200,100%,88%,0.9)'; ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); }
 
-        // neurons (same look as the opening net)
-        for(const n of ns){ const s=n.r*(0.5+n.le*0.95);
-          const a=(0.4+0.6*Math.abs(Math.sin(now/500+n.ph)))*n.le;
-          ctx.fillStyle=`hsla(190,100%,${68+n.le*8}%,${Math.min(1,a)})`;
-          ctx.beginPath(); ctx.arc(n.X,n.Y,s,0,7); ctx.fill(); }
+        // neurons (depth-shaded)
+        for(const pt of ps){ const s=(0.9+pt.depth*1.5)*(0.4+pt.le*0.9);
+          const a=(0.18+pt.depth*0.7)*(0.3+0.7*pt.le);
+          ctx.fillStyle=`hsla(195,100%,${64+pt.depth*22}%,${Math.min(1,a)})`;
+          ctx.beginPath(); ctx.arc(pt.X,pt.Y,s,0,7); ctx.fill(); }
 
-        // forming ring outline
-        ctx.strokeStyle=`hsla(195,100%,66%,${ease*0.22})`; ctx.lineWidth=1.2;
-        ctx.beginPath(); ctx.arc(cx,cy,R*0.82,0,7); ctx.stroke();
-
-        // ignition → SYSTEM ONLINE
-        if(e>=0.85 && !climaxed){ climaxed=true; flash=1; A.online(); rings.push({r:R*0.2,a:0.85});
+        // ignition → SYSTEM ONLINE (small bright core, flares on)
+        if(e>=0.86 && !climaxed){ climaxed=true; flash=1; A.online();
           const lab=$('#orb-stage-label'); lab.textContent='SYSTEM ONLINE'; lab.classList.add('show'); }
-        const coreR=R*0.26*(0.25+ease*0.75)+(climaxed?flash*R*0.5:0);
+        const coreR=R*0.09*(0.4+ease*0.6)+(climaxed?flash*R*0.55:0);
         ctx.beginPath(); ctx.arc(cx,cy,coreR,0,7);
-        ctx.fillStyle=`hsla(196,100%,86%,${0.9*Math.min(1,ease*1.4)})`;
-        ctx.shadowBlur=48; ctx.shadowColor='hsla(196,100%,62%,1)'; ctx.fill(); ctx.shadowBlur=0;
+        ctx.fillStyle=`hsla(196,100%,88%,${0.9*Math.min(1,ease*1.4)})`;
+        ctx.shadowBlur=30+(climaxed?flash*40:0); ctx.shadowColor='hsla(196,100%,64%,1)'; ctx.fill(); ctx.shadowBlur=0;
 
         ctx.globalCompositeOperation='source-over';
         if(flash>0){ ctx.fillStyle=`rgba(190,240,255,${flash*0.5})`; ctx.fillRect(0,0,W,H); flash*=0.9; }
