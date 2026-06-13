@@ -146,13 +146,13 @@ body{
 
 /* ---- topbar ---- */
 #topbar{height:54px;display:flex;align-items:center;gap:18px;padding:0 18px;flex:0 0 auto;
-  background:linear-gradient(180deg,rgba(70,92,120,.92),rgba(46,63,86,.94));
-  border-color:rgba(150,200,240,.30);box-shadow:0 2px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(170,215,255,.14)}
+  background:linear-gradient(180deg,rgba(92,116,148,.96),rgba(60,80,106,.96));
+  border-color:rgba(165,210,245,.34);box-shadow:0 2px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(190,225,255,.18)}
 .brand{display:flex;align-items:center;gap:12px}
 .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulseDot 2.4s ease-in-out infinite}
 @keyframes pulseDot{50%{opacity:.4;transform:scale(.7)}}
-.brand .name{font-family:var(--mono);font-weight:700;letter-spacing:.34em;font-size:15px}
-.brand .ver{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.2em;align-self:flex-start;margin-top:2px}
+.brand .name{font-family:var(--mono);font-weight:700;letter-spacing:.34em;font-size:15px;color:#f3f7ff;text-shadow:0 0 10px rgba(180,220,255,.4)}
+.brand .ver{font-family:var(--mono);font-size:10px;color:#aebfd2;letter-spacing:.2em;align-self:flex-start;margin-top:2px}
 
 .mode-toggle{display:flex;background:rgba(0,0,0,.35);border:1px solid var(--glass-border);border-radius:99px;padding:3px;margin:0 auto;gap:2px}
 .mode-toggle button{
@@ -208,9 +208,9 @@ body{
 .tabrail{flex:0 0 56px;display:flex;flex-direction:column;gap:6px;padding:14px 8px;border-right:1px solid var(--glass-border)}
 .tab{
   width:40px;height:40px;border-radius:10px;display:grid;place-items:center;cursor:pointer;
-  color:var(--text-dim);border:1px solid transparent;transition:var(--transition);position:relative;
+  color:#dbe6f2;border:1px solid transparent;transition:var(--transition);position:relative;
 }
-.tab:hover{color:var(--text);background:rgba(0,212,255,.06)}
+.tab:hover{color:#fff;background:rgba(0,212,255,.06)}
 .tab.active{color:var(--accent);background:rgba(0,212,255,.1);border-color:var(--glass-border-hi)}
 .tab.active::before{content:"";position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:2px;height:18px;background:var(--accent);border-radius:2px;box-shadow:0 0 8px var(--accent)}
 .tab .badge{position:absolute;top:4px;right:4px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--danger);color:#fff;font-size:9px;font-family:var(--mono);display:grid;place-items:center;font-weight:600}

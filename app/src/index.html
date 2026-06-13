@@ -674,6 +674,8 @@
      A per-load cache-buster guarantees the freshest JS after every deploy. */
   (function(){
     const V = '?v=' + Date.now();
+    // bust cached stylesheets too (their <link> tags have no version)
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(l=>{ const h=l.getAttribute('href'); if(h && !/^https?:/.test(h)) l.href = h.split('?')[0] + V; });
     function inject(src, parent){
       return new Promise(res=>{
         const s = document.createElement('script');
