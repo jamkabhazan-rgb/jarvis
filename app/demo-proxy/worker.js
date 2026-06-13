@@ -75,6 +75,11 @@ export default {
     if (!allowed.includes("*") && !allowed.includes(origin)) {
       return json({ error: "origin not allowed" }, 403, cors);
     }
+
+    // installer downloads (GET) — stream the latest release asset back with a
+    // clean filename (Jarvis.dmg / Jarvis.exe). No key needed.
+    if (url.pathname.startsWith("/dl/")) return await download(url, cors);
+
     if (!env.OPENAI_API_KEY) return json({ error: "proxy missing OPENAI_API_KEY secret" }, 500, cors);
 
     const ip = request.headers.get("CF-Connecting-IP") || "anon";
@@ -92,6 +97,27 @@ export default {
     }
   },
 };
+
+// stream the latest release installer back with a clean filename (Jarvis.dmg / Jarvis.exe)
+async function download(url, cors) {
+  const platform = url.pathname.split("/").pop();
+  const gh = { "User-Agent": "jarvis-proxy", "Accept": "application/vnd.github+json" };
+  const rel = await (await fetch("https://api.github.com/repos/jamkabhazan-rgb/jarvis/releases/latest", { headers: gh })).json();
+  const assets = rel.assets || [];
+  const pick = (re) => assets.find((a) => re.test(a.name));
+  let asset, base;
+  if (platform === "mac") { asset = pick(/(aarch64|arm64|universal).*\.dmg$/i) || pick(/\.dmg$/i); base = "Jarvis"; }
+  else if (platform === "mac-intel") { asset = pick(/(x64|x86_64|intel).*\.dmg$/i); base = "Jarvis-Intel"; }
+  else if (platform === "win") { asset = pick(/(setup)?\.exe$/i) || pick(/\.msi$/i); base = "Jarvis"; }
+  if (!asset) return json({ error: "no installer for " + platform }, 404, cors);
+  const ext = asset.name.slice(asset.name.lastIndexOf("."));
+  const upstream = await fetch(asset.browser_download_url, { headers: { "User-Agent": "jarvis-proxy" } });
+  if (!upstream.ok) return json({ error: "asset fetch " + upstream.status }, 502, cors);
+  return new Response(upstream.body, {
+    status: 200,
+    headers: { ...cors, "Content-Type": "application/octet-stream", "Content-Disposition": `attachment; filename="${base}${ext}"`, "Cache-Control": "no-store" },
+  });
+}
 
 async function chat(request, env, cors) {
   const body = await request.json().catch(() => ({}));
