@@ -172,6 +172,17 @@
     { name:'LinkedIn',          icon:'linkedin',         color:'#0A66C2', desc:'Posts · messages', linked:false },
     { name:'Spotify',           icon:'spotify',          color:'#1DB954', desc:'Playback · playlists', linked:false },
     { name:'YouTube',           icon:'youtube',          color:'#FF0000', desc:'Videos · analytics', linked:false },
+    { name:'X',                 icon:'x',                color:'#000000', desc:'Posts · DMs · trends', linked:false },
+    { name:'Instagram',         icon:'instagram',        color:'#E4405F', desc:'Posts · DMs · stories', linked:false },
+    { name:'Threads',           icon:'threads',          color:'#000000', desc:'Posts · replies', linked:false },
+    { name:'Reddit',            icon:'reddit',           color:'#FF4500', desc:'Posts · subreddits', linked:false },
+    { name:'TikTok',            icon:'tiktok',           color:'#010101', desc:'Videos · DMs', linked:false },
+    { name:'Facebook',          icon:'facebook',         color:'#1877F2', desc:'Pages · posts', linked:false },
+    { name:'Snapchat',          icon:'snapchat',         color:'#FFFC00', desc:'Snaps · stories', linked:false },
+    { name:'Pinterest',         icon:'pinterest',        color:'#BD081C', desc:'Pins · boards', linked:false },
+    { name:'Twitch',            icon:'twitch',           color:'#9146FF', desc:'Streams · chat', linked:false },
+    { name:'Mastodon',          icon:'mastodon',         color:'#6364FF', desc:'Posts · timelines', linked:false },
+    { name:'Bluesky',           icon:'bluesky',          color:'#0285FF', desc:'Posts · feeds', linked:false },
   ];
   // restore saved linked-state, then expose a saver
   (function(){
