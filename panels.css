@@ -400,7 +400,8 @@
 .dl-os{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:600;color:var(--text)}
 .dl-os svg{color:var(--accent)}
 .dl-meta{color:var(--muted);font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;margin:7px 0 16px}
-.dl-btn{margin-top:auto;width:100%;text-align:center;text-decoration:none;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.06em;font-weight:600;color:#001018;background:var(--accent);border-radius:10px;padding:11px 14px;transition:var(--transition)}
+.dl-card{justify-content:flex-start}
+.dl-btn{margin-top:4px;width:100%;text-align:center;text-decoration:none;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.06em;font-weight:600;color:#001018;background:var(--accent);border-radius:10px;padding:11px 14px;transition:var(--transition)}
 .dl-btn:hover{filter:brightness(1.12)}
 .dl-intel{display:block;margin-top:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--text-dim);text-decoration:none;text-align:center;width:100%}
 .dl-intel:hover{color:var(--text)}
