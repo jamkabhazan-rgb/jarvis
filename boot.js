@@ -138,6 +138,8 @@
     const str=`Welcome back, ${USER_NAME}.`;
     out.textContent='';
     for(const ch of str){ out.textContent+=ch; if(ch!==' ') A.SFX.key(); await sleep(38); }
+    // silence everything from here on — no sound after the welcome line
+    try{ stopDrone(); stopRumble(); }catch(e){} A.muteAt(0.6);
     await sleep(440);
     stage.style.transition='opacity .4s'; stage.style.opacity='0';
     await sleep(320); stage.classList.remove('on'); stage.style.opacity='';
@@ -168,11 +170,7 @@
     }
     const pulses=[];
     const guides=[R*1.18, R*1.5];   // faint concentric guide rings
-
-    const stopR=A.rumble({f0:26, vol:0.16});
-    A.riser({dur:2.6, vol:0.14});
-    setTimeout(()=>A.SFX.thud({vol:0.24}), 700);
-    setTimeout(()=>A.SFX.thud({vol:0.28}), 1500);
+    // (silent phase — all audio stops after the welcome line)
 
     const T=2700,t0=performance.now(); let rot=0,climaxed=false,flash=0;
     await new Promise(res=>{
@@ -235,7 +233,7 @@
           ctx.beginPath(); ctx.arc(pt.X,pt.Y,s,0,7); ctx.fill(); }
 
         // ignition → SYSTEM ONLINE (small bright core, flares on)
-        if(e>=0.86 && !climaxed){ climaxed=true; flash=1; A.online();
+        if(e>=0.86 && !climaxed){ climaxed=true; flash=1;
           const lab=$('#orb-stage-label'); lab.textContent='SYSTEM ONLINE'; lab.classList.add('show'); }
         const coreR=R*0.09*(0.4+ease*0.6)+(climaxed?flash*R*0.55:0);
         ctx.beginPath(); ctx.arc(cx,cy,coreR,0,7);
@@ -250,7 +248,6 @@
       }
       requestAnimationFrame(frame);
     });
-    stopR();
     await sleep(280);
     stage.style.transition='opacity .5s'; stage.style.opacity='0';
     await sleep(480); stage.classList.remove('on'); stage.style.opacity=''; $('#orb-stage-label').classList.remove('show');
@@ -258,8 +255,8 @@
 
   /* ---- phase 5: reveal ---- */
   function showSection(id){ const el=document.getElementById(id); if(!el) return; el.classList.add('revealed'); el.style.opacity='1'; el.style.transform='none'; }
-  function revealApp(){ A.SFX.sweep(); document.getElementById('app')?.classList.remove('booting');
-    ['topbar','orbcol','panelcol'].forEach((id,i)=>setTimeout(()=>{ showSection(id); A.SFX.blip(); }, i*180)); }
+  function revealApp(){ document.getElementById('app')?.classList.remove('booting');
+    ['topbar','orbcol','panelcol'].forEach((id,i)=>setTimeout(()=>{ showSection(id); }, i*180)); }
   async function phaseReveal(){
     const overlay=$('#boot'); revealApp();
     await sleep(700); overlay.classList.add('gone'); stopDrone(); stopRumble();

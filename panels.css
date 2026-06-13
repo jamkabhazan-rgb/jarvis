@@ -272,8 +272,8 @@
 #set-api-key:disabled{opacity:.4;cursor:not-allowed}
 
 /* ===================== TOPBAR · brightness pass ===================== */
-#topbar.panel{background:rgba(30,44,62,.78);border-color:rgba(130,205,255,.26)}
-#topbar .brand .ver{color:var(--text-dim)}
+#topbar.panel{background:linear-gradient(180deg,rgba(92,116,148,.96),rgba(60,80,106,.96));border-color:rgba(165,210,245,.34);box-shadow:0 2px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(190,225,255,.18)}
+#topbar .brand .ver{color:#aebfd2}
 .topnav .tab{color:#c9d6e6}
 .topnav .tab .tlabel{opacity:1;color:#d4e0ee}
 .topnav .tab:hover{color:#fff;background:rgba(0,212,255,.10);border-color:rgba(130,205,255,.2)}
