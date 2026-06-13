@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mirror app to legacy JARVIS.html
+        run: cp app/src/index.html app/src/JARVIS.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
