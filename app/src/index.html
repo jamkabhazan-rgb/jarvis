@@ -16,7 +16,15 @@
 
 <!-- ============ BOOT OVERLAY ============ -->
 <div id="boot">
-  <div id="kernel"></div>
+  <div id="net-stage">
+    <canvas id="boot-net"></canvas>
+    <div id="boot-hud">
+      <div id="boot-status">INITIALIZING NEURAL CORE</div>
+      <div id="boot-bar"><i id="boot-bar-fill"></i></div>
+      <div id="boot-pct">0%</div>
+      <div id="boot-log"></div>
+    </div>
+  </div>
 
   <div id="logo-stage">
     <div class="logo" id="logo-glitch" data-text="J.A.R.V.I.S.">J.A.R.V.I.S.
