@@ -378,9 +378,10 @@
 /* ===================== DOWNLOAD button (topbar) ===================== */
 .download-btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;cursor:pointer;
   font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;font-weight:600;color:#001018;
-  background:var(--accent);border-radius:9px;padding:9px 15px;margin-right:12px;transition:var(--transition);
-  box-shadow:0 0 18px rgba(0,212,255,.25)}
-.download-btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 0 26px rgba(0,212,255,.4)}
+  background:linear-gradient(180deg,#7fe9ff,#00c4ff);border-radius:9px;padding:9px 15px;margin-right:12px;transition:var(--transition);
+  box-shadow:0 0 20px rgba(0,212,255,.5);animation:dlglow 2.4s ease-in-out infinite}
+.download-btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 0 30px rgba(0,212,255,.75)}
+@keyframes dlglow{0%,100%{box-shadow:0 0 16px rgba(0,212,255,.35)}50%{box-shadow:0 0 30px rgba(0,212,255,.7)}}
 
 /* ===================== DOWNLOAD MODAL (in-app) ===================== */
 .dl-modal{position:fixed;inset:0;z-index:9700;background:rgba(0,5,10,.62);backdrop-filter:blur(5px);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .26s;padding:30px}
@@ -401,8 +402,8 @@
 .dl-os svg{color:var(--accent)}
 .dl-meta{color:var(--muted);font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;margin:7px 0 16px}
 .dl-card{justify-content:flex-start}
-.dl-btn{margin-top:4px;width:100%;text-align:center;text-decoration:none;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.06em;font-weight:600;color:#001018;background:var(--accent);border-radius:10px;padding:11px 14px;transition:var(--transition)}
-.dl-btn:hover{filter:brightness(1.12)}
+.dl-btn{margin-top:4px;width:100%;text-align:center;text-decoration:none;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.06em;font-weight:600;color:#001018;background:linear-gradient(180deg,#7fe9ff,#00c4ff);border-radius:10px;padding:11px 14px;transition:var(--transition);box-shadow:0 0 22px rgba(0,212,255,.45)}
+.dl-btn:hover{filter:brightness(1.12);box-shadow:0 0 30px rgba(0,212,255,.7)}
 .dl-intel{display:block;margin-top:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--text-dim);text-decoration:none;text-align:center;width:100%}
 .dl-intel:hover{color:var(--text)}
 .dl-term{margin-top:20px}
