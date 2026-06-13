@@ -79,11 +79,12 @@
 
   /* ---------- builder ---------- */
   let draft = null, editingId = null;
-  function blank(){ return { name:'', color:COLORS[0], glyph:'', role:'', prompt:'', caps:[], kbs:[], sources:[] }; }
+  function blank(){ return { name:'', color:COLORS[0], glyph:'', role:'', prompt:'', caps:[], connectors:[], kbs:[], sources:[] }; }
 
   function openBuilder(agent){
     editingId = agent ? agent.id : null;
     draft = agent ? JSON.parse(JSON.stringify(agent)) : blank();
+    if(!Array.isArray(draft.connectors)) draft.connectors = [];
     $('#ag-builder .ag-db').innerHTML = builderHTML();
     $('#ag-title').textContent = agent ? 'Edit agent' : 'New agent';
     bindBuilder();
@@ -92,6 +93,10 @@
   }
   function closeBuilder(){ $('#ag-builder').classList.remove('open'); A.SFX.tab(); }
 
+  function connChips(){
+    const list = window.JCONNECTORS || [];
+    return list.map(s=>`<div class="conn-chip${draft.connectors.includes(s.name)?' on':''}" data-conn="${esc(s.name)}" title="${esc(s.name)}"><i class="cc-ico" style="background:${esc(s.color)}"><img src="assets/brands/${esc(s.icon)}.svg" alt="" onerror="this.style.display='none'"></i><span>${esc(s.name)}</span></div>`).join('');
+  }
   function builderHTML(){
     const caps = CAPS.map(c=>`<div class="cap${draft.caps.includes(c.id)?' on':''}" data-cap="${c.id}"><span class="cap-box"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M5 12l5 5L20 6"/></svg></span>${esc(c.name)}</div>`).join('');
     const sw = COLORS.map(c=>`<div class="ag-sw${draft.color===c?' on':''}" data-color="${c}" style="background:${c}"></div>`).join('');
@@ -115,6 +120,12 @@
         <span class="lab">Primary role <span class="req">*</span></span>
         <div class="sub">The agent’s main job — its default directive when you give it a task.</div>
         <input class="ag-input" id="ag-role" placeholder="e.g. Search the web, read sources and synthesize briefs" value="${esc(draft.role)}">
+      </div>
+
+      <div class="ag-sec">
+        <span class="lab">Connectors</span>
+        <div class="sub">Pick the accounts this agent may act through (from your Connectors).</div>
+        <div class="conn-grid" id="ag-conns">${connChips()}</div>
       </div>
 
       <div class="ag-sec">
@@ -174,6 +185,11 @@
     root.querySelectorAll('#ag-caps .cap').forEach(c=> c.addEventListener('click',()=>{
       const id=c.dataset.cap; const i=draft.caps.indexOf(id);
       if(i>=0) draft.caps.splice(i,1); else draft.caps.push(id);
+      c.classList.toggle('on'); A.SFX.tab();
+    }));
+    root.querySelectorAll('#ag-conns .conn-chip').forEach(c=> c.addEventListener('click',()=>{
+      const id=c.dataset.conn; const i=draft.connectors.indexOf(id);
+      if(i>=0) draft.connectors.splice(i,1); else draft.connectors.push(id);
       c.classList.toggle('on'); A.SFX.tab();
     }));
     const addLink=(inputSel, arr)=>{

@@ -184,6 +184,8 @@
     { name:'Mastodon',          icon:'mastodon',         color:'#6364FF', desc:'Posts · timelines', linked:false },
     { name:'Bluesky',           icon:'bluesky',          color:'#0285FF', desc:'Posts · feeds', linked:false },
   ];
+  // expose the connector catalogue so the agent builder can offer them
+  window.JCONNECTORS = SERVICES;
   // restore saved linked-state, then expose a saver
   (function(){
     const saved = STORE.load('connectors', null);
