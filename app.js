@@ -6,6 +6,18 @@
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
 
+  // Inject button colours from JS (always loaded fresh via ?v=), so the
+  // active VOICE/CHAT toggle, the header DOWNLOAD button and the in-page
+  // Download buttons are the identical bright-cyan gradient even if a stale
+  // stylesheet is cached.
+  (function(){
+    const s = document.createElement('style');
+    s.textContent =
+      '.mode-toggle button.active{background:linear-gradient(180deg,#7fe9ff,#00c4ff)!important;color:#001018!important;box-shadow:0 0 18px rgba(0,212,255,.5)!important}'+
+      '.download-btn,.dl-btn{background:linear-gradient(180deg,#7fe9ff,#00c4ff)!important;color:#001018!important}';
+    document.head.appendChild(s);
+  })();
+
   /* ---------- voice state machine ---------- */
   const VS = {
     idle:      { label:'Standby',   sub:'Say “Hey Jarvis” or press the mic' },
